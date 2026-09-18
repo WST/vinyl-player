@@ -1,0 +1,6 @@
+build/
+*.stl
+*.3mf
+*.gcode
+*.png
+!doc/*.png
