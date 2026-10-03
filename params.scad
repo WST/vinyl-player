@@ -240,9 +240,14 @@ arm_cw_bore_clr = 0.3;
 arm_rest_dist    = 82;      // подставка тонарма: расстояние от оси стойки
 arm_park_azimuth = -85;     // направление трубки в припаркованном положении
 arm_rest_lift    = 5;       // на сколько подставка приподнимает трубку
-arm_rest_od      = 10;
-arm_rest_notch_w = 12;      // диаметр ложа (трубка в него укладывается)
-arm_rest_notch_depth = 6;   // на сколько ложе врезано в стойку
+arm_rest_od      = 10;      // ствол стойки
+// Ложе — U-образный паз вдоль трубки со стенками до её верха: трубка
+// просто ложится сверху, ничего не вдавливается (нагрузка на оси качания),
+// а вбок при переноске ей деться некуда.
+arm_rest_head_len = 10;     // длина ложа вдоль трубки
+arm_rest_clr      = 0.25;   // боковой зазор трубки в ложе
+arm_rest_floor    = 3;      // материал под трубкой
+arm_rest_wall     = 3;      // стенки ложа
 arm_rest_foot_d  = 26;
 arm_rest_foot_t  = 4;
 arm_rest_scr_dx  = 9;       // два винта крепления подставки, смещение по X
@@ -349,23 +354,27 @@ assert(arm_shell_pad_x > arm_wire_chan_fwd*cos(arm_headshell_angle)
 
 arm_rest_pos   = [arm_pivot_pos[0] + arm_rest_dist*cos(arm_park_azimuth),
                   arm_pivot_pos[1] + arm_rest_dist*sin(arm_park_azimuth)];
-// Ложе подставки: его ось выше оси трубки на (notch_w - tube_od)/2 —
-// тогда уложенная трубка встаёт ровно на arm_rest_lift выше рабочего уровня
-arm_rest_groove_z = arm_axis_z + arm_rest_lift + (arm_rest_notch_w - arm_tube_od)/2;
-arm_rest_h     = arm_rest_groove_z + arm_rest_notch_w/2
-                 - arm_rest_notch_depth - case_h;
+// Ложе подставки (высоты абсолютные). Ось уложенной трубки — ровно на
+// arm_rest_lift выше рабочего уровня; верх стенок — по верху трубки.
+arm_rest_tube_z   = arm_axis_z + arm_rest_lift;
+arm_rest_chan_w   = arm_tube_od + 2*arm_rest_clr;
+arm_rest_top_z    = arm_rest_tube_z + arm_tube_od/2;
+arm_rest_head_bot = arm_rest_tube_z - arm_tube_od/2 - arm_rest_floor;
+arm_rest_head_hw  = arm_rest_chan_w/2 + arm_rest_wall;     // полуширина головы
 
 // Три винта крепления стойки тонарма (в системе корпуса)
 arm_base_scr_pos = [ for (a = [90, 210, 330])
                      [arm_pivot_pos[0] + arm_base_scr_r*cos(a),
                       arm_pivot_pos[1] + arm_base_scr_r*sin(a)] ];
-// Два винта крепления подставки тонарма
-assert(arm_rest_dist + arm_rest_notch_w/2 < arm_tube_reach - arm_joint_len - 1,
-       "Ложе подставки попадает на хомут головки: уменьшите arm_rest_dist");
+assert(arm_rest_dist + arm_rest_head_len/2 < arm_tube_reach - arm_joint_len - 1,
+       "Ложе подставки попадает на нарост головки: уменьшите arm_rest_dist");
+assert(arm_rest_head_bot - case_h > arm_rest_foot_t + 8 + 4,
+       "Ложе подставки слишком низко: не остаётся ствола под переход к голове");
 assert(norm([arm_rest_pos[0] - platter_pos[0], arm_rest_pos[1] - platter_pos[1]])
        > platter_d/2 + arm_rest_foot_d/2 + 2,
        "Подставка тонарма налезает на диск: правьте arm_rest_dist/arm_park_azimuth");
 
+// Два винта крепления подставки тонарма
 arm_rest_scr_pos = [ for (s = [-1, 1])
                      [arm_rest_pos[0] + s*arm_rest_scr_dx*cos(arm_park_azimuth + 90),
                       arm_rest_pos[1] + s*arm_rest_scr_dx*sin(arm_park_azimuth + 90)] ];
