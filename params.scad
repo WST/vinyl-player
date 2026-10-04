@@ -88,7 +88,10 @@ panel_pcb_h    = 8;         // высота стоек (зазор панель 
 panel_pcb_hole = [[-54, -6], [54, -6], [-54, 6], [54, 6]];
 
 // ============================================================================
-//  ДИСК, ВАЛ, ВТУЛКА, ПРИВОД
+//  ДИСК И ВАЛ
+//  Всё, что под крышкой (подшипники, шкивы, двигатель), — это модуль
+//  вращения в drive/. Здесь только то, что видят остальные детали:
+//  где ось, какого диаметра вал и как высоко он торчит.
 // ============================================================================
 platter_d   = 170;          // поддерживаются только 7" пластинки
 platter_h   = 9;
@@ -107,56 +110,38 @@ record_d      = 178;        // 7" пластинка (для сборки/про
 record_t      = 1.6;
 record_hole_d = 7.3;
 
-spindle_d   = 7.1;          // печатаем сами; позже заменим на металл 8 мм
-spindle_clr = 0.25;         // зазор в втулке (под смазку)
+// Вал — стальной пруток 8 мм. Верхний конец сточен до 7.1 мм: он же
+// центрирующий штырь под отверстие пластинки.
+spindle_d     = 8;
+spindle_tip_d = 7.1;
 spindle_above_record = 7;   // сколько вал выступает над пластинкой
-// Под стопорные винты на валу не лыски, а кольцевые канавки: тогда не важно,
-// как вал повёрнут, а винт ещё и фиксирует деталь по высоте.
-spindle_groove_h     = 3;
-spindle_groove_depth = 0.5;
 set_access_d = 4.5;         // технологические отверстия к стопорным винтам
 
-bush_od        = 16;        // втулка узла вращения
-bush_h         = 26;        // полная высота, включая фланец
-bush_flange_d  = 24;
-bush_flange_t  = 2;
-bush_thrust_t  = 1.5;       // «пятка»: на неё опирается торец вала
-bush_land      = 6;         // длина рабочих поясков (верх и низ)
-bush_relief_extra = 1.2;    // расширение канала посередине — карман для смазки
-bush_press_clr = 0.15;      // посадка втулки в стакан поддона
-bush_collar_od = 28;        // стакан в поддоне
-bush_collar_h  = 14;
+platter_rpm = 33.333;
 
-pulley_d     = 70;          // колесо на валу (ведомое)
-pulley_h     = 8;
-pulley_web_t = 2.5;
-pulley_rim_t = 3;
-pulley_hub_d = 16;
-pulley_hub_h = 8;
-belt_d = 1.8;               // круглый пассик
-belt_groove_r = 1.1;
+// ============================================================================
+//  МОДУЛЬ ВРАЩЕНИЯ: ИНТЕРФЕЙС С ПОДДОНОМ
+//  Модуль (вал, подшипники, редукция, двигатель) — отдельный «плагин» в
+//  drive/, ставится в поддон на четыре бобышки. Поддон знает только то,
+//  что ниже: отсек, точки крепления и потолок. Переделка привода — это
+//  правка drive/, поддон и крышка при этом не меняются.
+// ============================================================================
+// Отсек: за боковыми стенками будут динамики, за передней — плата
+// управления, поэтому от них держим не меньше 30 мм. Справа — тонарм и
+// плата УМ, сзади — место под будущие разъёмы.
+drive_keep_side  = 30;
+drive_keep_front = 30;
+drive_keep_back  = 12;
+drive_bay_x1     = 40;
 
-platter_rpm    = 33.333;
-motor_pulley_d = 7;         // ведущий шкив на валу двигателя
+// Бобышки под шасси модуля: саморезы 2.5 x 8 сверху через шасси
+drive_mount_pos    = [[-82, -50], [22, -50], [-82, 72], [22, 72]];
+drive_mount_boss_d = 8;
+drive_mount_boss_h = 5;
 
-// ----------------------------------------------------------- двигатель -----
-// Двигатель пока не выбран: числа ниже — типовой мотор от кассетника.
-// Вал вертикально вверх, корпус стоит на дне поддона, держит хомут.
-motor_pos       = [-70, -40];
-motor_body_d    = 24.4;
-motor_body_h    = 26;
-motor_shaft_d   = 2.0;
-motor_shaft_len = 10;
-motor_clamp_t   = 3;        // толщина хомута
-motor_clamp_h   = 12;       // высота хомута
-            // низ хомута = верх стоек в поддоне (см. производные величины)
-motor_clamp_clr = 0.3;
-motor_boss_d    = 9;        // стойки в поддоне под лапы хомута
-motor_boss_h    = 6;
-motor_foot_span = 42;       // между центрами лап
-motor_foot_t    = 3;
-motor_slot_len  = 8;        // паз регулировки натяжения пассика
-motor_ear       = 9;        // «уши» стяжного винта хомута
+// Вокруг вала крышка без рёбер — там модулю можно подниматься почти
+// до самой крышки (ступица колеса со стопорным винтом)
+spindle_keepout_d = 32;
 
 // ============================================================================
 //  ТОНАРМ
@@ -220,6 +205,7 @@ arm_pivot_shaft_d   = 8;    // вертикальная ось, полая (в �
 arm_pivot_shaft_len = 18;
 arm_pivot_clr       = 0.25;
 arm_pivot_land      = 6;    // рабочие пояски вертикального подшипника
+arm_pivot_relief    = 1.2;  // расширение канала между поясками — карман для смазки
 arm_pivot_wire_d    = 5;
 
 arm_pillar_od    = 18;
@@ -272,25 +258,23 @@ inner_d = case_d - 2*wall;
 inner_r = corner_r - wall;
 inner_h = tray_h - floor_t;
 
-// ---- узел вращения по высоте ----
-bush_z           = floor_t;                       // фланец втулки лежит на дне
-bush_top_z       = bush_z + bush_h;
-spindle_bottom_z = bush_z + bush_thrust_t;        // торец вала на «пятке»
+// ---- диск и вал по высоте ----
 platter_bottom_z = case_h + platter_gap;
 platter_top_z    = platter_bottom_z + platter_h;
 // мат лежит в утоплении, поэтому выступает над плоскостью диска не на всю
 // свою толщину
 record_z         = platter_top_z - platter_mat_recess + mat_t;
 record_surface_z = record_z + record_t;           // рабочая плоскость
-spindle_len      = record_surface_z + spindle_above_record - spindle_bottom_z;
+spindle_top_z    = record_surface_z + spindle_above_record;
+// Ступенька 8 -> 7.1 прячется в ступице диска под матом
+spindle_tip_z    = platter_top_z - platter_mat_recess;
 
-// Плоскость пассика: сразу над втулкой, чтобы плечо изгиба вала было мало
-belt_plane_z   = bush_top_z + 2 + pulley_h/2;
-pulley_z       = belt_plane_z - pulley_h/2;
-motor_face_z   = floor_t + motor_body_h;          // торец двигателя с валом
-
-// Лыски на валу — там, где стоят стопорные винты колеса и диска
-spindle_set_z  = [belt_plane_z, platter_bottom_z + platter_hub_h/2];
+// ---- отсек модуля вращения ----
+drive_bay = [[-inner_w/2 + drive_keep_side, -inner_d/2 + drive_keep_front],
+             [drive_bay_x1,                  inner_d/2 - drive_keep_back]];
+drive_floor_z   = floor_t + drive_mount_boss_h;   // низ шасси модуля
+drive_ceiling_z = tray_h - cover_rib_h - 1;       // под рёбрами крышки
+drive_spindle_ceiling_z = tray_h - 1;             // в зоне spindle_keepout_d
 
 // ---- тонарм ----
 arm_mount_dist = arm_eff_len - arm_overhang;      // ось стойки → ось диска
@@ -400,18 +384,6 @@ case_screw_pos = concat(
       [sx*(panel_w/2 + 14), sy*(case_d/2 - corner_r)] ]
 );
 
-// ---- двигатель ----
-// Двигатель стоит на дне поддона, хомут начинается на уровне верха стоек,
-// поэтому лапы хомута и его нижний торец лежат в одной плоскости —
-// деталь печатается «плашмя» без поддержек.
-motor_clamp_z = floor_t + motor_boss_h;
-motor_dir = atan2(platter_pos[1] - motor_pos[1], platter_pos[0] - motor_pos[0]);
-motor_boss_pos = [ for (s = [-1, 1])
-                   [motor_pos[0] + s*motor_foot_span/2*cos(motor_dir + 90),
-                    motor_pos[1] + s*motor_foot_span/2*sin(motor_dir + 90)] ];
-motor_rpm_required = platter_rpm * pulley_d / motor_pulley_d;
-belt_span = norm([platter_pos[0] - motor_pos[0], platter_pos[1] - motor_pos[1]]);
-
 // ---- платы ----
 main_pcb_hole_pos = [ for (sx = [-1, 1], sy = [-1, 1])
                       [main_pcb_pos[0] + sx*(main_pcb[0]/2 - pcb_hole_inset),
@@ -445,15 +417,15 @@ function arm_tracking_error(r) =
 // ============================================================================
 assert(corner_r > wall, "Скругление боковых рёбер должно быть больше толщины стенки");
 assert(platter_d/2 + 5 < min(case_w, case_d)/2 - wall, "Диск не влезает в корпус");
-assert(pulley_d/2 + motor_body_d/2 < belt_span, "Колесо упирается в корпус двигателя");
-assert(pulley_z > bush_top_z, "Колесо задевает втулку: поднимите belt_plane_z");
-assert(pulley_z + pulley_h < tray_h - cover_lip_h, "Колесо задевает крышку");
-assert(motor_face_z <= pulley_z, "Двигатель выше плоскости пассика: уменьшите motor_body_h или поднимите belt_plane_z");
-assert(motor_face_z + motor_shaft_len >= pulley_z + pulley_h, "Не хватает вылета вала двигателя под шкив");
+for (p = drive_mount_pos)
+    assert(p[0] - drive_mount_boss_d/2 >= drive_bay[0][0] && p[0] + drive_mount_boss_d/2 <= drive_bay[1][0]
+           && p[1] - drive_mount_boss_d/2 >= drive_bay[0][1] && p[1] + drive_mount_boss_d/2 <= drive_bay[1][1],
+           "Бобышка модуля вращения вне отсека drive_bay");
+assert(drive_bay[1][0] < main_pcb_pos[0] - main_pcb[0]/2, "Отсек модуля вращения налезает на плату УМ");
+assert(spindle_keepout_d > cover_spindle_hole_d + 4, "Зона без рёбер вокруг вала уже проёма в крышке");
 assert(arm_yoke_rise >= arm_yoke_bar_t + arm_hub_h/2 + 2, "Вилка тонарма упирается в ступицу");
 assert(arm_mount_dist > platter_d/2 + arm_base_flange_d/2, "Стойка тонарма попадает под диск");
 assert(panel_pad_z1 > panel_win_top + panel_flange, "Рамка панели не влезает по высоте");
-assert(bush_h > 2*bush_land + bush_thrust_t, "Втулке не хватает высоты на пояски");
 // Противовес должен оставаться в габарите корпуса на всём ходе тонарма
 for (r = [arm_groove_r_in, arm_groove_r_out]) {
     assert(abs(arm_cw_pos_at(r)[0]) + arm_cw_d/2 < case_w/2 - wall,
@@ -465,10 +437,8 @@ for (r = [arm_groove_r_in, arm_groove_r_out]) {
 echo(str("== Проигрыватель: сводка =="));
 echo(str("Габарит корпуса: ", case_w, " x ", case_d, " x ", case_h, " мм"));
 echo(str("Верх диска Z=", platter_top_z, ", рабочая плоскость пластинки Z=", record_surface_z));
-echo(str("Длина вала: ", spindle_len, " мм, плоскость пассика Z=", belt_plane_z));
-echo(str("Требуемые обороты двигателя: ", motor_rpm_required, " об/мин при колесе ",
-         pulley_d, " / шкиве ", motor_pulley_d, " мм"));
-echo(str("Межосевое расстояние привода: ", belt_span, " мм"));
+echo(str("Отсек модуля вращения: X ", drive_bay[0][0], "..", drive_bay[1][0],
+         ", Y ", drive_bay[0][1], "..", drive_bay[1][1], ", Z ", drive_floor_z, "..", drive_ceiling_z));
 echo(str("Тонарм: L=", arm_eff_len, ", вынос=", arm_overhang, ", разворот=", arm_offset_angle,
          ", ось качания Z=", arm_axis_z));
 echo(str("Погрешность тонарма на r=", arm_groove_r_out, ": ", arm_tracking_error(arm_groove_r_out),

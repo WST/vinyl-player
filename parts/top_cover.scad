@@ -54,12 +54,13 @@ module cover_ribs() {
     }
 }
 
-// Места, где ни бортику, ни рёбрам быть нельзя: стойки поддона, узел
-// вращения, крепёж тонарма (саморезы вкручиваются снизу — нужен доступ)
+// Места, где ни бортику, ни рёбрам быть нельзя: стойки поддона, зона над
+// модулем вращения вокруг вала, крепёж тонарма (саморезы вкручиваются
+// снизу — нужен доступ)
 module cover_keepout() {
     for (p = case_screw_pos)
         translate([p[0], p[1], 0]) thru(scr3_boss_d + 3, case_h + 1);
-    translate([platter_pos[0], platter_pos[1], 0]) thru(bush_collar_od + 4, case_h + 1);
+    translate([platter_pos[0], platter_pos[1], 0]) thru(spindle_keepout_d, case_h + 1);
     translate([arm_pivot_pos[0], arm_pivot_pos[1], 0])
         thru(arm_base_flange_d - 6, case_h + 1);
     for (p = concat(arm_base_scr_pos, arm_rest_scr_pos))

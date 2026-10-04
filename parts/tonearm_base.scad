@@ -35,7 +35,7 @@ module tonearm_base() {
         // канал вертикального подшипника: два пояска + карман для смазки
         translate([0, 0, bore_bottom]) cylinder(d = bore_d, h = h_tot);
         translate([0, 0, bore_bottom + arm_pivot_land])
-            cylinder(d = bore_d + bush_relief_extra,
+            cylinder(d = bore_d + arm_pivot_relief,
                      h = arm_pivot_shaft_len - 2*arm_pivot_land);
         translate([0, 0, h_tot - 1])
             cylinder(d1 = bore_d, d2 = bore_d + 2, h = 1 + eps);
