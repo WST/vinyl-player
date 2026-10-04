@@ -65,7 +65,12 @@ module mock_belt(a, da, b, db, z) color("black")
         offset(r = -belt_t/2) hull() { translate(a) circle(d = da); translate(b) circle(d = db); }
     }
 
+module mock_reg_pcb() color("darkgreen")
+    translate([reg_pcb_pos[0], reg_pcb_pos[1], reg_pcb_z + reg_pcb_t/2])
+        cube([reg_pcb[0], reg_pcb[1], reg_pcb_t], center = true);
+
 module drive_mocks() {
+    mock_reg_pcb();
     mock_bearings(spindle_pos, spindle_tower_top);
     mock_bearings(idler_pos, idler_tower_top);
     mock_spindle_rod();

@@ -26,7 +26,7 @@ module drive_motor_holder() {
                 cylinder(d = holder_cup_od, h = holder_base_t);
                 for (s = [-1, 1], dx = [-1, 1])
                     translate([dx*holder_slot_len/2, s*holder_foot_span/2, 0])
-                        cylinder(d = holder_boss_d + 4, h = holder_base_t);
+                        cylinder(d = holder_foot_d, h = holder_base_t);
             }
             cylinder(d = holder_cup_od, h = cup_top);
             // уши стяжного винта — с внешней стороны, подальше от пассика
@@ -44,9 +44,11 @@ module drive_motor_holder() {
         // прорезь хомута
         translate([0, -1, holder_base_t])
             cube([holder_cup_od/2 + holder_ear + 1, 2, cup_top]);
-        // стяжной винт: проходное с одной стороны, пилотное с другой
+        // Стяжной винт: проходное с одной стороны, пилотное с другой.
+        // Головка — с противоположной от платы регулятора стороны, иначе
+        // плата закрывает подход отвёртке.
         translate([holder_cup_od/2 + holder_ear/2, 0, holder_base_t + holder_cup_h/2])
-            rotate([90, 0, 0]) {
+            rotate([-90, 0, 0]) {
                 cylinder(d = scr3_free, h = 10);
                 translate([0, 0, -10]) cylinder(d = scr3_pilot, h = 10);
             }

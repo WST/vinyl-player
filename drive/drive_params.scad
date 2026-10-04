@@ -81,6 +81,19 @@ holder_foot_span = 46;      // между пазами крепления
 holder_slot_len  = 8;       // ход регулировки натяжения пассика 1
 holder_ear       = 8;       // уши стяжного винта
 
+// ------------------------------------------- плата регулятора оборотов -----
+// Вплотную к двигателю, напротив выхода его проводов: провода мотора
+// короткие и меньше наводят. Не под колесом вала диска — подстроечник
+// доступен сверху при снятой крышке.
+reg_pcb        = [20, 40];      // габарит платы по X и Y
+reg_pcb_pos    = [24, 1];       // центр платы
+reg_pcb_t      = 1.6;
+// Крепёжные отверстия платы от её центра — поправить под реальную плату
+reg_pcb_holes  = [[-7, -17], [7, -17], [-7, 17], [7, 17]];
+reg_standoff_d = 6;
+reg_solder_clr = 2.5;           // под пайкой выводов над рёбрами шасси
+reg_pad_margin = 3;             // поле плиты шасси вокруг платы
+
 // --------------------------------------------------------------- шкивы -----
 pulley_t        = 4;        // высота обода
 pulley_groove_h = 1.0;      // глубина канавки
@@ -163,7 +176,23 @@ chassis_y1 = max([for (p = drive_mount_pos) p[1]]) + chassis_ear;
 holder_cup_id = motor_d + holder_clr;
 holder_cup_od = holder_cup_id + 2*holder_wall;
 holder_boss_pos = [ for (s = [-1, 1]) polar(motor_pos, holder_foot_span/2, motor_angle + 90*s) ];
-holder_keepout_r = norm([holder_slot_len/2, holder_foot_span/2]) + holder_boss_d/2 + 3;
+holder_foot_d = holder_boss_d + 4;
+// Лапа при сдвиге держателя на весь ход паза уходит от центра на slot_len
+holder_keepout_r = norm([holder_slot_len, holder_foot_span/2]) + holder_foot_d/2 + 1;
+
+// ---- плата регулятора ----
+reg_standoff_h = chassis_rib_h + reg_solder_clr;   // выше рёбер шасси
+reg_pcb_z      = chassis_z1 + reg_standoff_h;      // низ платы
+reg_pad_x0 = reg_pcb_pos[0] - reg_pcb[0]/2 - reg_pad_margin;
+reg_pad_x1 = reg_pcb_pos[0] + reg_pcb[0]/2 + reg_pad_margin;
+reg_pad_y0 = reg_pcb_pos[1] - reg_pcb[1]/2 - reg_pad_margin;
+reg_pad_y1 = reg_pcb_pos[1] + reg_pcb[1]/2 + reg_pad_margin;
+reg_hole_pos = [ for (h = reg_pcb_holes) reg_pcb_pos + h ];
+
+// Расстояние от точки до прямоугольника платы в плане
+function reg_pcb_dist(p) =
+    norm([max(abs(p[0] - reg_pcb_pos[0]) - reg_pcb[0]/2, 0),
+          max(abs(p[1] - reg_pcb_pos[1]) - reg_pcb[1]/2, 0)]);
 
 // ---- пассики ----
 // Путь открытого пассика по средней линии; d1 > d2
@@ -235,6 +264,18 @@ for (s = belt1_strands)
     assert(seg_dist(spindle_pos, s[0], s[1]) > tower_od/2 + belt_t + 1,
            "Пассик 1 трётся о башню вала диска: правьте motor_angle");
 
+// -- плата регулятора
+assert(reg_pad_x0 >= drive_bay[0][0] && reg_pad_x1 <= drive_bay[1][0] &&
+       reg_pad_y0 >= drive_bay[0][1] && reg_pad_y1 <= drive_bay[1][1],
+       "Плата регулятора вылезает из отсека: правьте reg_pcb_pos");
+assert(reg_pcb_dist(spindle_pos) > spindle_pulley_od/2 + 1,
+       "Плата регулятора под колесом вала диска — к ней не подлезть сверху");
+assert(reg_pcb_dist(motor_pos) > holder_keepout_r - 2,
+       "Плата регулятора мешает ходу держателя двигателя");
+for (h = reg_pcb_holes)
+    assert(abs(h[0]) + reg_standoff_d/2 <= reg_pcb[0]/2 + 1 && abs(h[1]) + reg_standoff_d/2 <= reg_pcb[1]/2 + 1,
+           "Стойка платы регулятора вылезает за плату: правьте reg_pcb_holes");
+
 // -- пассики
 assert(belt1_wrap >= belt_min_wrap, "Малый охват шкива двигателя: увеличьте motor_dist");
 assert(belt2_wrap >= belt_min_wrap, "Малый охват промвала: увеличьте idler_dist");
@@ -257,3 +298,6 @@ echo(str("Вал диска: пруток 8 мм длиной ", r1(spindle_rod_
 echo(str("Промвал: пруток 8 мм длиной ", r1(idler_rod_len)));
 echo(str("Плоскости пассиков: Z=", r1(belt1_z), " и Z=", r1(belt2_z), ", дно двигателя Z=", r1(motor_base_z),
          " (дно держателя ", r1(holder_base_t), " мм)"));
+echo(str("Плата регулятора ", reg_pcb[0], " x ", reg_pcb[1], ": низ Z=", r1(reg_pcb_z),
+         ", до двигателя ", r1(reg_pcb_dist(motor_pos) - motor_d/2), " мм, высота деталей до ",
+         r1(drive_ceiling_z - reg_pcb_z - reg_pcb_t), " мм"));

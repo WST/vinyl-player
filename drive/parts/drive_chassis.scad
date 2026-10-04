@@ -2,7 +2,8 @@
 //  ШАССИ МОДУЛЯ ВРАЩЕНИЯ
 //
 //  Плита с двумя башнями под пары подшипников 608ZZ (вал диска и
-//  промвал) и бобышками под держатель двигателя. Ставится в поддон на его
+//  промвал), бобышками под держатель двигателя и стойками под плату
+//  регулятора оборотов рядом с ним. Ставится в поддон на его
 //  бобышки и притягивается четырьмя саморезами 2.5 x 8.
 //
 //  В каждой башне два гнезда: нижний подшипник запрессовывается снизу,
@@ -41,7 +42,14 @@ module tower_bore(pos, top) translate([pos[0], pos[1], 0]) {
 module chassis_plate() {
     translate([(chassis_x0 + chassis_x1)/2, (chassis_y0 + chassis_y1)/2, chassis_z0])
         rounded_box(chassis_x1 - chassis_x0, chassis_y1 - chassis_y0, chassis_t, chassis_r);
+    // прилив под плату регулятора
+    translate([(reg_pad_x0 + reg_pad_x1)/2, (reg_pad_y0 + reg_pad_y1)/2, chassis_z0])
+        rounded_box(reg_pad_x1 - reg_pad_x0, reg_pad_y1 - reg_pad_y0, chassis_t, chassis_r);
 }
+
+module reg_standoffs() for (p = reg_hole_pos)
+    translate([p[0], p[1], chassis_z1 - eps])
+        screw_boss(reg_standoff_d, reg_standoff_h + eps, scr25_pilot, reg_standoff_h - 1);
 
 module rib(a, b) hull() for (p = [a, b])
     translate([p[0], p[1], chassis_z1 - eps])
@@ -79,6 +87,7 @@ module drive_chassis() {
             chassis_plate();
             chassis_ribs();
             holder_bosses();
+            reg_standoffs();
             tower_solid(spindle_pos, spindle_tower_top);
             tower_solid(idler_pos, idler_tower_top);
         }
