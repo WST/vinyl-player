@@ -4,3 +4,4 @@ build/
 *.gcode
 *.png
 !doc/*.png
+*.dch~
