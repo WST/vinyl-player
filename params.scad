@@ -102,16 +102,19 @@ platter_rim_t  = 2.5;       // толщина обода
 platter_hub_d  = 16;
 platter_hub_h  = 9;         // ступица не должна выступать над плоскостью диска
 platter_spokes = 6;
-platter_mat_d  = 164;       // утопление под мат (войлок/резина)
+platter_mat_d  = 164;       // утопление под мат
 platter_mat_recess = 1.0;
-mat_t = 2;                  // толщина мата (в расчёте высоты тонарма)
+mat_t        = 2;           // толщина мата (в расчёте высоты тонарма)
+mat_od_clr   = 0.4;         // зазор по диаметру утопления
+mat_hole_clr = 0.4;         // зазор по штырю 7.1 (TPU садится свободно)
 
 record_d      = 178;        // 7" пластинка (для сборки/проверок)
 record_t      = 1.6;
 record_hole_d = 7.3;
 
-// Вал — стальной пруток 8 мм. Верхний конец сточен до 7.1 мм: он же
-// центрирующий штырь под отверстие пластинки.
+// Вал диска: номинал 8 мм под 608ZZ. На прототипе валы печатные
+// (чуть тоньше — см. rod_print_clr в drive/), кончик 7.1 мм —
+// центрирующий штырь под отверстие пластинки ~7.2 мм.
 spindle_d     = 8;
 spindle_tip_d = 7.1;
 spindle_above_record = 7;   // сколько вал выступает над пластинкой
@@ -421,6 +424,8 @@ for (p = drive_mount_pos)
     assert(p[0] - drive_mount_boss_d/2 >= drive_bay[0][0] && p[0] + drive_mount_boss_d/2 <= drive_bay[1][0]
            && p[1] - drive_mount_boss_d/2 >= drive_bay[0][1] && p[1] + drive_mount_boss_d/2 <= drive_bay[1][1],
            "Бобышка модуля вращения вне отсека drive_bay");
+assert(spindle_tip_d < record_hole_d, "Кончик вала не пройдёт в отверстие пластинки");
+assert(mat_t > platter_mat_recess, "Мат должен выступать над плоскостью диска");
 assert(drive_bay[1][0] < main_pcb_pos[0] - main_pcb[0]/2, "Отсек модуля вращения налезает на плату УМ");
 assert(spindle_keepout_d > cover_spindle_hole_d + 4, "Зона без рёбер вокруг вала уже проёма в крышке");
 assert(arm_yoke_rise >= arm_yoke_bar_t + arm_hub_h/2 + 2, "Вилка тонарма упирается в ступицу");

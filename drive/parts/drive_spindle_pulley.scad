@@ -19,7 +19,7 @@ module drive_spindle_pulley() {
             pulley_wheel(spindle_pulley_od);
             chamfered_cyl(pulley_hub_d, spindle_hub_top - spindle_pulley_z0, ch = 0.5, bottom = false);
         }
-        thru(spindle_d + rod_bore_clr, spindle_hub_top - spindle_pulley_z0);
+        thru(rod_print_d + rod_bore_clr, spindle_hub_top - spindle_pulley_z0);
         set_screw_hole(spindle_set_z - spindle_pulley_z0);
     }
 }

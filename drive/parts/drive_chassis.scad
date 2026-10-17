@@ -57,6 +57,7 @@ module rib(a, b) hull() for (p = [a, b])
 
 // Рёбра: рамка по краю плиты и лучи от башен к точкам крепления.
 // Под держателем двигателя рёбер нет — там его ход по пазам.
+// Вокруг крепежа к поддону — круглая площадка под гайку.
 module chassis_ribs() difference() {
     union() {
         translate([(chassis_x0 + chassis_x1)/2, (chassis_y0 + chassis_y1)/2, chassis_z1 - eps])
@@ -75,6 +76,9 @@ module chassis_ribs() difference() {
         }
     }
     translate([motor_pos[0], motor_pos[1], 0]) thru(2*holder_keepout_r, drive_ceiling_z);
+    for (p = drive_mount_pos)
+        translate([p[0], p[1], chassis_z1])
+            cylinder(d = chassis_nut_keepout, h = chassis_rib_h + 2*eps);
 }
 
 module holder_bosses() for (p = holder_boss_pos)

@@ -17,7 +17,7 @@ module drive_idler_cap() {
             chamfered_cyl(cap_d, 1.2, ch = 0.3);
             chamfered_cyl(spindle_d + 4, cap_h, ch = 0.5, bottom = false);
         }
-        thru(spindle_d - cap_fit, cap_h);
+        thru(rod_print_d - cap_fit, cap_h);
     }
 }
 

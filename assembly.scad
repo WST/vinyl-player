@@ -13,6 +13,7 @@ use <lib/common.scad>
 use <parts/tray.scad>
 use <parts/top_cover.scad>
 use <parts/platter.scad>
+use <parts/mat.scad>
 use <drive/drive.scad>          // модуль вращения — «плагин», см. drive/
 use <parts/control_panel.scad>
 use <parts/tonearm_base.scad>
@@ -49,11 +50,6 @@ module mock_panel_pcb() color("darkgreen")
     translate([0, -case_d/2 + panel_t + panel_pcb_h + main_pcb_t/2, panel_z])
         cube([panel_pcb[0], main_pcb_t, panel_pcb[1]], center = true);
 
-module mock_mat() color("dimgray")
-    translate([platter_pos[0], platter_pos[1],
-               platter_top_z - platter_mat_recess])
-        cylinder(d = platter_mat_d - 0.4, h = mat_t);
-
 module mock_record() color("#202020")
     translate([platter_pos[0], platter_pos[1], record_z]) difference() {
         cylinder(d = record_d, h = record_t);
@@ -75,7 +71,10 @@ if (show_panel) color("steelblue") control_panel();
 
 if (show_drive) {
     drive_module(mocks = show_mockups);
-    if (show_platter) color("darkslategray") platter();
+    if (show_platter) {
+        color("darkslategray") platter();
+        color("dimgray") mat();
+    }
 }
 
 if (show_tonearm) {
@@ -91,6 +90,6 @@ if (show_tonearm) {
 if (show_mockups) {
     mock_main_pcb();
     mock_panel_pcb();
-    if (show_platter) { mock_mat(); mock_record(); }
+    if (show_platter) mock_record();
     mock_cartridge(arm_az);
 }

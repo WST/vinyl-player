@@ -5,16 +5,18 @@
 //  drive_module(). Другая реализация привода — это другая папка drive/ с
 //  тем же drive_module() и тем же интерфейсом из ../params.scad.
 //
-//  Болванки покупного (двигатель, подшипники, валы, пассики) — тоже здесь:
-//  они часть модуля и меняются вместе с ним.
+//  Болванки покупного (двигатель, подшипники, пассики) — тоже здесь:
+//  они часть модуля и меняются вместе с ним. Валы — печатные детали.
 // ============================================================================
 
 include <drive_params.scad>
 use <../lib/common.scad>
 
 use <parts/drive_chassis.scad>
+use <parts/drive_spindle_shaft.scad>
 use <parts/drive_spindle_pulley.scad>
 use <parts/drive_spacer.scad>
+use <parts/drive_idler_shaft.scad>
 use <parts/drive_idler_pulley.scad>
 use <parts/drive_idler_cap.scad>
 use <parts/drive_motor_holder.scad>
@@ -23,26 +25,10 @@ use <parts/drive_motor_holder.scad>
 module mock_bearing(pos, z) color("silver")
     translate([pos[0], pos[1], z]) tube(brg_od, brg_id, brg_w);
 
-// Упорное кольцо из термоусадки под нижним подшипником
-module mock_stop_ring(pos) color("firebrick")
-    translate([pos[0], pos[1], chassis_z0 - stop_ring_h])
-        tube(stop_ring_d, spindle_d, stop_ring_h);
-
 module mock_bearings(pos, top) {
     mock_bearing(pos, chassis_z0);
     mock_bearing(pos, top - brg_w);
-    mock_stop_ring(pos);
 }
-
-module mock_spindle_rod() color("lightsteelblue")
-    translate([spindle_pos[0], spindle_pos[1], rod_bottom_z]) {
-        cylinder(d = spindle_d, h = spindle_tip_z - rod_bottom_z);
-        cylinder(d = spindle_tip_d, h = spindle_rod_len);
-    }
-
-module mock_idler_rod() color("lightsteelblue")
-    translate([idler_pos[0], idler_pos[1], rod_bottom_z])
-        cylinder(d = spindle_d, h = idler_rod_len);
 
 module mock_motor() translate([motor_pos[0], motor_pos[1], motor_base_z]) {
     color("dimgray") cylinder(d = motor_d, h = motor_h);
@@ -73,8 +59,6 @@ module drive_mocks() {
     mock_reg_pcb();
     mock_bearings(spindle_pos, spindle_tower_top);
     mock_bearings(idler_pos, idler_tower_top);
-    mock_spindle_rod();
-    mock_idler_rod();
     mock_motor();
     mock_belt(idler_pos, idler_pulley_pd, motor_pos, motor_pd, belt1_z);
     mock_belt(spindle_pos, spindle_pulley_pd, idler_pos, capstan_pd, belt2_z);
@@ -83,8 +67,10 @@ module drive_mocks() {
 // ================================================================ МОДУЛЬ ===
 module drive_module(mocks = true) {
     color("gainsboro") drive_chassis();
+    color("tan")       drive_spindle_shaft();
     color("dimgray")   drive_spindle_pulley();
     color("orange")    drive_spacer();
+    color("tan")       drive_idler_shaft();
     color("slategray") drive_idler_pulley();
     color("orange")    drive_idler_cap();
     color("gray")      drive_motor_holder();

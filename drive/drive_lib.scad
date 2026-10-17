@@ -40,3 +40,24 @@ module pulley_wheel(od, web_top = false) {
 // Отверстие под стопорный винт M3 в ступице, на высоте z от её низа
 module set_screw_hole(z) translate([0, 0, z]) rotate([0, 90, 0])
     cylinder(d = scr3_pilot, h = pulley_hub_d);
+
+// Лыска под стопорный винт на печатном валу. z, az — в координатах сборки
+// относительно оси вала (z абсолютный).
+module shaft_flat(z, az = 0)
+    rotate([0, 0, az])
+        translate([rod_print_d/2 - rod_flat_d, -rod_flat_w/2, z - rod_flat_len/2])
+            cube([rod_flat_d + 2, rod_flat_w, rod_flat_len]);
+
+// Тело печатного вала на оси [0,0]: буртик-упор снизу, опциональный
+// кончик под отверстие пластинки. z — абсолютные координаты сборки.
+module printed_shaft_body(top_z, tip_len = 0) {
+    body_h = top_z - rod_bottom_z - tip_len;
+    translate([0, 0, rod_bottom_z]) {
+        chamfered_cyl(stop_ring_d, rod_bottom_gap, ch = 0.4, bottom = false);
+        chamfered_cyl(rod_print_d, body_h, ch = 0.4, bottom = false,
+                      top = tip_len <= 0);
+        if (tip_len > 0)
+            translate([0, 0, body_h])
+                chamfered_cyl(spindle_tip_d, tip_len, ch = 0.4, bottom = false);
+    }
+}
