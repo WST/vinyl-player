@@ -13,7 +13,7 @@ use <../../lib/common.scad>
 
 module drive_spacer() {
     translate([spindle_pos[0], spindle_pos[1], spindle_tower_top])
-        tube(brg_inner_ring_d, spindle_d + rod_bore_clr, spacer_t);
+        tube(brg_inner_ring_d, spindle_d + rod_bore_clr + rod_ring_clr, spacer_t);
 }
 
 drive_spacer();
