@@ -65,6 +65,10 @@ module cover_keepout() {
         thru(arm_base_flange_d - 6, case_h + 1);
     for (p = concat(arm_base_scr_pos, arm_rest_scr_pos))
         translate([p[0], p[1], 0]) thru(scr25_head_d + 5, case_h + 1);
+    // динамики выше бортика: над ними ни бортика, ни рёбер
+    for (sx = [0, 1]) mirror([sx, 0, 0])
+        translate([spk_back_x - 1, spk_y - spk_half_w - 1, 0])
+            cube([case_w/2 - spk_back_x + 2, 2*spk_half_w + 2, case_h + 1]);
 }
 
 module cover_holes() {

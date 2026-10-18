@@ -2,7 +2,8 @@
 //  ПОДДОН (нижняя часть корпуса)
 //
 //  Несёт: бобышки под модуль вращения (сам модуль — в drive/), стойки
-//  платы фонокорректора/УМ, рамку съёмной панели управления и стойки под
+//  платы фонокорректора/УМ под тонармом, направляющие динамиков со щелями
+//  решётки в боковых стенках, рамку съёмной панели управления и стойки под
 //  саморезы крышки.
 //
 //  Печать: как есть, дном на стол, без поддержек.
@@ -68,6 +69,41 @@ module panel_cutouts() {
                          h = wall + panel_pad_t + panel_boss_len + eps);
 }
 
+// --------------------------------------------------------- динамики -------
+// Модули ниже строят узел у правой стенки, левый получается зеркалом.
+// Две направляющие уголком: паз между стенкой и «губой» держит фланец за
+// края, динамик опускается сверху до дна. Вверху паз расширен под заход.
+module speaker_rail() {
+    lip_y0 = spk_rail_y - spk_rail_lip - spk_clr;
+    difference() {
+        translate([0, 0, floor_t - eps]) linear_extrude(height = spk_size + eps) {
+            translate([spk_wall_x - spk_rail_depth, spk_rail_y])
+                square([spk_rail_depth + eps, spk_rail_t]);
+            translate([spk_wall_x - spk_rail_depth, lip_y0])
+                square([spk_rail_t, spk_rail_y - lip_y0 + eps]);
+        }
+        hull() {
+            translate([spk_wall_x - spk_chan, lip_y0 - 1, floor_t + spk_size - 2])
+                cube([spk_chan, spk_rail_y - lip_y0 + 1, eps]);
+            translate([spk_wall_x - spk_chan - 1.2, lip_y0 - 1, floor_t + spk_size])
+                cube([spk_chan + 1.2, spk_rail_y - lip_y0 + 1, eps]);
+        }
+    }
+}
+
+module speaker_mounts() for (sx = [0, 1]) mirror([sx, 0, 0])
+    translate([0, spk_y, 0]) for (sy = [0, 1]) mirror([0, sy, 0]) speaker_rail();
+
+// Вертикальные щели перед диффузором, длина — по хорде его круга
+module speaker_grilles() for (sx = [0, 1]) mirror([sx, 0, 0])
+    for (i = [-grille_n : grille_n]) {
+        y = i*grille_pitch;
+        h = 2*sqrt(grille_r*grille_r - y*y);
+        translate([spk_wall_x - 1, spk_y + y, spk_zc]) rotate([0, 90, 0])
+            hull() for (s = [-1, 1]) translate([s*(h - grille_slot_w)/2, 0, 0])
+                cylinder(d = grille_slot_w, h = wall + 2);
+    }
+
 // ------------------------------------- стойки платы фонокорректора и УМ ----
 module pcb_standoffs() {
     for (p = main_pcb_hole_pos)
@@ -85,8 +121,10 @@ module tray() {
             panel_frame_pad();
             panel_screw_bosses();
             pcb_standoffs();
+            speaker_mounts();
         }
         panel_cutouts();
+        speaker_grilles();
     }
 }
 

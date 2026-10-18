@@ -31,7 +31,7 @@ show_drive   = true;    // модуль вращения (отдельно — d
 show_platter = true;    // выключить, чтобы увидеть привод под диском
 show_panel   = true;
 show_tonearm = true;
-show_mockups = true;    // двигатель, подшипники, платы, пластинка, головка — «болванки»
+show_mockups = true;    // двигатель, подшипники, платы, динамики, пластинка, головка — «болванки»
 
 // Где сейчас стоит игла: 84 — начало записи, 53 — конец (7" сингл)
 stylus_r = arm_groove_r_out;
@@ -43,12 +43,30 @@ arm_az = park_arm ? arm_park_azimuth : arm_tube_azimuth_at(stylus_r);
 // Это не детали для печати, а покупные/будущие узлы: нужны только чтобы
 // видеть, что всё влезает и ничему не мешает.
 module mock_main_pcb() color("darkgreen")
-    translate([main_pcb_pos[0], main_pcb_pos[1], floor_t + pcb_standoff_h])
+    translate([main_pcb_pos[0], main_pcb_pos[1], floor_t + pcb_standoff_h + main_pcb_t/2 + 0.05])
         cube([main_pcb[0], main_pcb[1], main_pcb_t], center = true);
 
 module mock_panel_pcb() color("darkgreen")
     translate([0, -case_d/2 + panel_t + panel_pcb_h + main_pcb_t/2, panel_z])
         cube([panel_pcb[0], main_pcb_t, panel_pcb[1]], center = true);
+
+// Динамик: фланец к стенке, корзина и магнит внутрь корпуса.
+// Отодвинут от стенки и дна на 0.05: касание гранью рушит рендер сборки.
+module mock_speakers() for (sx = [0, 1]) mirror([sx, 0, 0])
+    translate([spk_wall_x - 0.05, spk_y, spk_zc + 0.05]) rotate([0, -90, 0]) {
+        color("dimgray") difference() {
+            translate([0, 0, spk_flange_t/2]) cube([spk_size, spk_size, spk_flange_t], center = true);
+            for (a = [45 : 90 : 359]) rotate([0, 0, a])
+                translate([spk_hole_spacing/sqrt(2), 0, 0]) thru(2.5, spk_flange_t);
+            thru(spk_cone_d, spk_flange_t);
+        }
+        color("black") translate([0, 0, 0.5])
+            cylinder(d1 = spk_cone_d - 0.4, d2 = 12, h = 6);
+        color("dimgray") translate([0, 0, spk_flange_t - 0.2])
+            cylinder(d1 = spk_cone_d + 1, d2 = spk_magnet_d, h = spk_depth*0.55);
+        color("silver") translate([0, 0, spk_depth*0.55])
+            cylinder(d = spk_magnet_d, h = spk_depth*0.45);
+    }
 
 module mock_record() color("#202020")
     translate([platter_pos[0], platter_pos[1], record_z]) difference() {
@@ -90,6 +108,7 @@ if (show_tonearm) {
 if (show_mockups) {
     mock_main_pcb();
     mock_panel_pcb();
+    mock_speakers();
     if (show_platter) mock_record();
     mock_cartridge(arm_az);
 }
