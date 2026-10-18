@@ -3,8 +3,8 @@
 //
 //  Тот же диаметр, что у вала диска: посадка в два 608ZZ и сам участок
 //  под пассик 2 (шкив второй ступени). Снизу буртик-упор, сверху на вал
-//  напрессовывается колпачок drive_idler_cap. Лыска — под стопорный винт
-//  большого колеса.
+//  напрессовывается колпачок drive_idler_cap. Лыска под винт колеса —
+//  rod_set_screws в drive_params.scad.
 //
 //  Печать: стоя, буртиком на стол, 100% заполнение. Участок под пассиком
 //  лучше слегка зашкурить для сцепления.
@@ -17,7 +17,7 @@ use <../drive_lib.scad>
 module drive_idler_shaft() {
     translate([idler_pos[0], idler_pos[1], 0]) difference() {
         printed_shaft_body(idler_rod_top_z);
-        shaft_flat(idler_set_z);
+        if (rod_set_screws) shaft_flat(idler_set_z);
     }
 }
 

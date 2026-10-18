@@ -2,9 +2,9 @@
 //  БОЛЬШОЕ КОЛЕСО ПРОМВАЛА (ведомое, первая ступень)
 //
 //  Диск сверху, ступица уходит вниз и упирается пояском во внутреннее
-//  кольцо верхнего подшипника. Стопорный винт M3 — в ступице под колесом,
-//  туда подход сбоку. Выше колеса сам вал работает шкивом второй
-//  ступени; верх колеса — нижний бортик для пассика 2.
+//  кольцо верхнего подшипника. На PLA колесо клеится; отверстие под
+//  стопорный винт — rod_set_screws. Выше колеса сам вал работает шкивом
+//  второй ступени; верх колеса — нижний бортик для пассика 2.
 //
 //  Печать: перевернуть — диском на стол, ступица вверх. 100% заполнение
 //  ступицы.
@@ -24,8 +24,9 @@ module drive_idler_pulley() {
             translate([0, 0, idler_tower_top])
                 cylinder(d = brg_inner_ring_d, h = thrust_ring_h + eps);
         }
-        translate([0, 0, idler_tower_top]) thru(rod_print_d + rod_bore_clr, idler_pulley_z1 - idler_tower_top);
-        translate([0, 0, idler_tower_top]) set_screw_hole(idler_set_z - idler_tower_top);
+        translate([0, 0, idler_tower_top]) thru(spindle_d + rod_bore_clr, idler_pulley_z1 - idler_tower_top);
+        if (rod_set_screws)
+            translate([0, 0, idler_tower_top]) set_screw_hole(idler_set_z - idler_tower_top);
     }
 }
 

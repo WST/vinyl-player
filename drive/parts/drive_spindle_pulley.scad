@@ -2,9 +2,8 @@
 //  КОЛЕСО ВАЛА ДИСКА (ведомое, вторая ступень)
 //
 //  Сидит на валу над верхним подшипником через шайбу drive_spacer и держит
-//  вал по высоте: стопорный винт M3 в ступице, ступица через шайбу давит на
-//  внутреннее кольцо. Ступица поднимается в зону без рёбер крышки — винт
-//  над колесом, к нему свободный подход сбоку.
+//  вал по высоте: ступица через шайбу давит на внутреннее кольцо. На PLA
+//  колесо клеится; отверстие под стопорный винт — rod_set_screws.
 //
 //  Печать: как есть, диском на стол, 100% заполнение ступицы.
 // ============================================================================
@@ -19,8 +18,8 @@ module drive_spindle_pulley() {
             pulley_wheel(spindle_pulley_od);
             chamfered_cyl(pulley_hub_d, spindle_hub_top - spindle_pulley_z0, ch = 0.5, bottom = false);
         }
-        thru(rod_print_d + rod_bore_clr, spindle_hub_top - spindle_pulley_z0);
-        set_screw_hole(spindle_set_z - spindle_pulley_z0);
+        thru(spindle_d + rod_bore_clr, spindle_hub_top - spindle_pulley_z0);
+        if (rod_set_screws) set_screw_hole(spindle_set_z - spindle_pulley_z0);
     }
 }
 
