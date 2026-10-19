@@ -48,13 +48,17 @@ module shaft_flat(z, az = 0)
         translate([rod_print_d/2 - rod_flat_d, -rod_flat_w/2, z - rod_flat_len/2])
             cube([rod_flat_d + 2, rod_flat_w, rod_flat_len]);
 
-// Тело печатного вала на оси [0,0]: буртик-упор снизу, опциональный
-// кончик под отверстие пластинки. z — абсолютные координаты сборки.
-module printed_shaft_body(top_z, tip_len = 0) {
-    body_h = top_z - rod_bottom_z - tip_len;
-    translate([0, 0, rod_bottom_z]) {
-        chamfered_cyl(stop_ring_d, rod_bottom_gap, ch = 0.4, bottom = false);
-        chamfered_cyl(rod_print_d, body_h, ch = 0.4, bottom = false,
+// Тело печатного вала на оси [0,0]. z — абсолютные координаты сборки.
+// collar — буртик-упор снизу (вал диска). Промвал без буртика: торец
+// садится на пятку стакана, bottom_z = idler_shaft_z0.
+module printed_shaft_body(top_z, tip_len = 0, bottom_z = undef, collar = true) {
+    z0 = bottom_z == undef ? rod_bottom_z : bottom_z;
+    body_h = top_z - z0 - tip_len;
+    translate([0, 0, z0]) {
+        if (collar)
+            translate([0, 0, rod_bottom_z - z0])
+                chamfered_cyl(stop_ring_d, rod_bottom_gap, ch = 0.4, bottom = false);
+        chamfered_cyl(rod_print_d, body_h, ch = 0.4, bottom = true,
                       top = tip_len <= 0);
         if (tip_len > 0)
             translate([0, 0, body_h])

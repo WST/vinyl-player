@@ -1,19 +1,17 @@
 // ============================================================================
 //  ШАССИ МОДУЛЯ ВРАЩЕНИЯ
 //
-//  Плита с двумя башнями под пары подшипников 608ZZ (вал диска и
-//  промвал), бобышками под держатель двигателя и стойками под плату
-//  регулятора оборотов рядом с ним. Ставится в поддон на его
-//  бобышки и притягивается четырьмя саморезами 2.5 x 8.
+//  Плита: башня под два 608ZZ вала диска, стакан-втулка промвала,
+//  бобышки держателя двигателя и стойки платы регулятора. Ставится
+//  в поддон на его бобышки и притягивается четырьмя саморезами 2.5 x 8.
 //
-//  В каждой башне два гнезда: нижний подшипник запрессовывается снизу,
-//  верхний — сверху, оба упираются наружным кольцом в перемычку между
-//  гнёздами. Осевую нагрузку (диск, пластинка) держит верхний подшипник
-//  вала диска.
+//  Башня вала диска: нижний подшипник запрессовывается снизу, верхний —
+//  сверху, оба упираются наружным кольцом в перемычку. Осевую нагрузку
+//  (диск, пластинка) держит верхний подшипник.
 //
-//  Печать: как есть, плитой на стол, без поддержек (потолок нижнего гнезда —
-//  узкое кольцо, мостится). Перед запрессовкой примерить подшипник: посадку
-//  правит brg_seat_clr.
+//  Промвал садится в стакан сверху: дно закрыто (пятка), два рабочих
+//  пояска и карман для смазки. Посадку правит idler_bush_clr — перепечатать
+//  шасси. Печать плитой на стол, без поддержек.
 // ============================================================================
 
 include <../drive_params.scad>
@@ -24,6 +22,28 @@ module tower_solid(pos, top) translate([pos[0], pos[1], chassis_z0]) {
     for (a = [45 : 90 : 359]) rotate([0, 0, a])
         translate([tower_od/2 - 0.5, 0, chassis_t - eps])
             gusset(tower_gusset, min(tower_gusset, top - chassis_z1 - 2), chassis_rib_t);
+}
+
+// Стакан промвала растёт из плиты. Канал не сквозной: торец вала
+// опирается на пятку. Два пояска держат вал, расточка между ними —
+// карман для литола.
+module idler_well_solid() translate([idler_pos[0], idler_pos[1], chassis_z0]) {
+    cylinder(d = idler_bush_od, h = idler_bush_top - chassis_z0);
+    for (a = [45 : 90 : 359]) rotate([0, 0, a])
+        translate([idler_bush_od/2 - 0.5, 0, chassis_t - eps])
+            gusset(tower_gusset, min(tower_gusset, idler_bush_top - chassis_z1 - 2), chassis_rib_t);
+}
+
+module idler_well_bore() translate([idler_pos[0], idler_pos[1], 0]) {
+    z0 = chassis_z0 + idler_thrust_t;
+    h  = idler_bush_top - z0;
+    translate([0, 0, z0]) cylinder(d = idler_bush_id, h = h + eps);
+    translate([0, 0, z0 + idler_bush_land])
+        cylinder(d = idler_bush_id + idler_bush_relief,
+                 h = h - 2*idler_bush_land);
+    translate([0, 0, idler_bush_top - idler_mouth_ch])
+        cylinder(d1 = idler_bush_id, d2 = idler_bush_id + 2*idler_mouth_ch,
+                 h = idler_mouth_ch + eps);
 }
 
 module tower_bore(pos, top) translate([pos[0], pos[1], 0]) {
@@ -93,10 +113,10 @@ module drive_chassis() {
             holder_bosses();
             reg_standoffs();
             tower_solid(spindle_pos, spindle_tower_top);
-            tower_solid(idler_pos, idler_tower_top);
+            idler_well_solid();
         }
         tower_bore(spindle_pos, spindle_tower_top);
-        tower_bore(idler_pos, idler_tower_top);
+        idler_well_bore();
         // крепление к поддону
         for (p = drive_mount_pos)
             translate([p[0], p[1], chassis_z0]) thru(scr25_free, chassis_t + chassis_rib_h);

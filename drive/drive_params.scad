@@ -1,8 +1,8 @@
 // ============================================================================
 //  МОДУЛЬ ВРАЩЕНИЯ — ПАРАМЕТРЫ
 //
-//  Самостоятельный узел («плагин»): шасси с двумя печатными валами на
-//  подшипниках 608ZZ, двухступенчатая пассиковая редукция и двигатель
+//  Самостоятельный узел («плагин»): шасси, вал диска на 608ZZ, промвал
+//  во втулке-стакане в плите, двухступенчатая пассиковая редукция и двигатель
 //  RF-300C-14270. Ставится в поддон на бобышки drive_mount_pos.
 //  Поддон и крышка от этого файла не зависят — они видят только интерфейс
 //  в ../params.scad (отсек, точки крепления, потолок, ось и диаметр вала).
@@ -61,9 +61,24 @@ idler_angle     = 120;      // направление от оси диска, г
 motor_dist      = 55;       // межосевое: промвал -> двигатель
 motor_angle     = 0;        // направление от промвала
 idler_pulley_pd = 62;       // большое колесо промвала, по средней линии пассика
-// Рабочий участок промвала под пассиком 2 — сам вал после посадки в 608ZZ,
-// то есть номинал 8 мм, а не модель с компенсацией печати.
+// Рабочий участок промвала под пассиком 2 — сам вал номиналом 8 мм,
+// не модель с компенсацией печати.
 capstan_d       = spindle_d;
+
+// Промвал — не 608, а стакан в плите шасси: вал опускается сверху,
+// дно закрыто (пятка), два пояска и карман для смазки. Так меньше
+// люфта, чем у короткой дырки в плите, и нет шарикового гула.
+// Посадка промвала в стакане. Это единственный параметр, которым
+// подгоняется «туго / свободно» после печати: больше — свободнее,
+// меньше — плотнее, потом перепечатать шасси. Вал и его rod_print_clr
+// не трогать: он общий с валом диска под 608.
+idler_bush_clr     = 0.3;       // зазор канала к модели вала, по диаметру
+idler_bush_land    = 5;         // рабочие пояски сверху и снизу
+idler_bush_relief  = 1.2;       // расширение между поясками
+idler_bush_wall    = 4;         // стенка стакана
+idler_thrust_t     = 1.5;       // пятка: на неё садится торец вала
+idler_hub_clr      = 0.4;       // зазор ступицы колеса над кромкой стакана
+idler_mouth_ch     = 1.2;       // заходная фаска канала
 
 // --------------------------------------------------------------- шасси -----
 chassis_t     = 3;          // плита
@@ -171,8 +186,9 @@ spindle_set_z     = (spindle_pulley_z0 + pulley_t + spindle_hub_top)/2;
 idler_pulley_z1   = spindle_pulley_z0 - pulley_clr;       // верх колеса промвала
 idler_pulley_z0   = idler_pulley_z1 - pulley_t;
 belt1_z           = idler_pulley_z1 - pulley_t/2;         // плоскость пассика 1
-idler_tower_top   = idler_pulley_z0 - hub_set_h - thrust_ring_h;
-idler_set_z       = idler_tower_top + thrust_ring_h + hub_set_h/2;
+idler_hub_z0      = idler_pulley_z0 - hub_set_h;          // низ ступицы колеса
+idler_bush_top    = idler_hub_z0 - idler_hub_clr;         // кромка стакана
+idler_set_z       = idler_hub_z0 + hub_set_h/2;
 
 motor_base_z  = belt1_z - motor_groove_z;
 holder_z0     = chassis_z1 + holder_boss_h;
@@ -182,7 +198,10 @@ rod_print_d     = spindle_d - rod_print_clr;
 rod_bottom_z    = chassis_z0 - rod_bottom_gap;
 spindle_rod_len = spindle_top_z - rod_bottom_z;
 spindle_tip_len = spindle_top_z - spindle_tip_z;
-idler_rod_len   = idler_rod_top_z - rod_bottom_z;
+idler_shaft_z0  = chassis_z0 + idler_thrust_t;            // торец вала на пятке
+idler_rod_len   = idler_rod_top_z - idler_shaft_z0;
+idler_bush_id   = rod_print_d + idler_bush_clr;
+idler_bush_od   = idler_bush_id + 2*idler_bush_wall;
 platter_set_z   = platter_bottom_z + platter_hub_h/2;
 
 // ---- шасси ----
@@ -256,18 +275,22 @@ assert(chassis_x0 >= drive_bay[0][0] && chassis_x1 <= drive_bay[1][0] &&
 assert(in_bay(spindle_pos, spindle_pulley_od/2), "Колесо вала диска вылезает из отсека");
 assert(in_bay(idler_pos, idler_pulley_od/2), "Колесо промвала вылезает из отсека: правьте idler_angle/idler_dist");
 assert(in_bay(motor_pos, holder_keepout_r - 3), "Держатель двигателя вылезает из отсека: правьте motor_angle/motor_dist");
-for (p = [spindle_pos, idler_pos, motor_pos])
+for (p = [spindle_pos, motor_pos])
     assert(p[0] > chassis_x0 + tower_od/2 && p[0] < chassis_x1 - tower_od/2 &&
            p[1] > chassis_y0 + tower_od/2 && p[1] < chassis_y1 - tower_od/2,
            "Узел модуля вне плиты шасси: правьте drive_mount_pos в ../params.scad или компоновку");
+assert(idler_pos[0] > chassis_x0 + idler_bush_od/2 && idler_pos[0] < chassis_x1 - idler_bush_od/2 &&
+       idler_pos[1] > chassis_y0 + idler_bush_od/2 && idler_pos[1] < chassis_y1 - idler_bush_od/2,
+       "Стакан промвала вне плиты шасси");
 
 // -- по высоте
 assert(spindle_hub_top - spindle_set_z > 2.5, "Мало ступицы над колесом вала диска под стопорный винт");
 assert(pulley_hub_d < spindle_keepout_d - 4, "Ступица колеса вала диска шире зоны без рёбер крышки");
 assert(spindle_tower_top - brg_w - (chassis_z0 + brg_w) >= tower_mid_t,
        "Подшипники вала диска не помещаются в башню");
-assert(idler_tower_top - brg_w - (chassis_z0 + brg_w) >= tower_mid_t,
-       "Подшипники промвала не помещаются в башню: опустите шасси или уменьшите hub_set_h");
+assert(idler_bush_top - chassis_z0 - idler_thrust_t >= 2*idler_bush_land + 2,
+       "Стакану промвала не хватает высоты на пояски: уменьшите hub_set_h");
+assert(idler_bush_od < idler_pulley_od - 4, "Стакан промвала шире колеса");
 assert(holder_base_t >= motor_bump_h + 1.5,
        "Двигатель не помещается под плоскость пассика 1: проверьте motor_groove_z");
 assert(idler_rod_top_z - cap_z0 >= 3, "Колпачок промвала слишком мало сидит на валу");
@@ -289,7 +312,7 @@ assert(idler_dist > idler_pulley_od/2 + tower_od/2 + 1, "Колесо промв
 assert(idler_dist > spindle_pulley_od/2 + cap_d/2 + 1, "Колесо вала диска задевает колпачок промвала");
 assert(motor_dist > idler_pulley_od/2 + motor_d/2 + 1, "Двигатель задевает колесо промвала");
 assert(norm(motor_pos - spindle_pos) > holder_keepout_r + tower_od/2, "Держатель двигателя задевает башню вала диска");
-assert(motor_dist > holder_keepout_r + tower_od/2, "Держатель двигателя задевает башню промвала");
+assert(motor_dist > holder_keepout_r + idler_bush_od/2, "Держатель двигателя задевает стакан промвала");
 for (s = belt1_strands)
     assert(seg_dist(spindle_pos, s[0], s[1]) > tower_od/2 + belt_t + 1,
            "Пассик 1 трётся о башню вала диска: правьте motor_angle");
@@ -325,7 +348,10 @@ echo(str("Пассик 2: межосевое ", idler_dist, ", путь ", r1(be
          " град -> брать ~", round(belt_folded(belt2_path)), " по маркировке"));
 echo(str("Вал диска (печатный): модель Ø", r1(rod_print_d), " x ", r1(spindle_rod_len),
          ", кончик Ø", spindle_tip_d, " x ", r1(spindle_tip_len), " (проверено)"));
-echo(str("Промвал (печатный): модель Ø", r1(rod_print_d), " x ", r1(idler_rod_len)));
+echo(str("Промвал (печатный): модель Ø", r1(rod_print_d), " x ", r1(idler_rod_len),
+         ", стакан Ø", r1(idler_bush_id), " x ", r1(idler_bush_top - idler_shaft_z0),
+         "; посадка idler_bush_clr=", idler_bush_clr,
+         " (больше — свободнее, перепечатать шасси)"));
 echo(str("Плоскости пассиков: Z=", r1(belt1_z), " и Z=", r1(belt2_z), ", дно двигателя Z=", r1(motor_base_z),
          " (дно держателя ", r1(holder_base_t), " мм)"));
 echo(str("Плата регулятора ", reg_pcb[0], " x ", reg_pcb[1], ": низ Z=", r1(reg_pcb_z),

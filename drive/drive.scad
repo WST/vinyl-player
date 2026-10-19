@@ -5,7 +5,7 @@
 //  drive_module(). Другая реализация привода — это другая папка drive/ с
 //  тем же drive_module() и тем же интерфейсом из ../params.scad.
 //
-//  Болванки покупного (двигатель, подшипники, пассики) — тоже здесь:
+//  Болванки покупного (двигатель, 608 вала диска, пассики) — тоже здесь:
 //  они часть модуля и меняются вместе с ним. Валы — печатные детали.
 // ============================================================================
 
@@ -58,7 +58,6 @@ module mock_reg_pcb() color("darkgreen")
 module drive_mocks() {
     mock_reg_pcb();
     mock_bearings(spindle_pos, spindle_tower_top);
-    mock_bearings(idler_pos, idler_tower_top);
     mock_motor();
     mock_belt(idler_pos, idler_pulley_pd, motor_pos, motor_pd, belt1_z);
     mock_belt(spindle_pos, spindle_pulley_pd, idler_pos, capstan_pd, belt2_z);
