@@ -202,7 +202,6 @@ idler_shaft_z0  = chassis_z0 + idler_thrust_t;            // торец вала
 idler_rod_len   = idler_rod_top_z - idler_shaft_z0;
 idler_bush_id   = rod_print_d + idler_bush_clr;
 idler_bush_od   = idler_bush_id + 2*idler_bush_wall;
-platter_set_z   = platter_bottom_z + platter_hub_h/2;
 
 // ---- шасси ----
 tower_od = brg_od + 2*tower_wall;
@@ -303,8 +302,6 @@ assert(stop_ring_d < brg_inner_ring_d, "Упорное кольцо задева
 assert(abs(rod_print_clr) < 1, "Компенсация печати вала подозрительно большая");
 assert(!rod_set_screws || spindle_set_z < spindle_tip_z - rod_flat_len/2,
        "Лыска колеса вала диска заезжает на кончик 7.1");
-assert(!rod_set_screws || platter_set_z < spindle_tip_z - rod_flat_len/2,
-       "Лыска диска заезжает на кончик 7.1");
 assert(motor_base_z + motor_full_h < spindle_pulley_z0 - 0.5, "Колесо двигателя задевает колесо вала диска");
 
 // -- в плане

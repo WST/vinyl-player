@@ -119,7 +119,10 @@ record_hole_d = 7.3;
 spindle_d     = 8;
 spindle_tip_d = 7.1;
 spindle_above_record = 7;   // сколько вал выступает над пластинкой
-set_access_d = 4.5;         // технологические отверстия к стопорным винтам
+// Диск не крепится винтом: садится на уступ 8→7.1 и снимается вверх,
+// как на ЭПУ. Зазор отверстия ступицы по кончику — если проскальзывает
+// на оборотах, уменьшить и перепечатать диск.
+platter_bore_clr = 0.25;
 
 platter_rpm = 33.333;
 
@@ -292,8 +295,8 @@ platter_top_z    = platter_bottom_z + platter_h;
 record_z         = platter_top_z - platter_mat_recess + mat_t;
 record_surface_z = record_z + record_t;           // рабочая плоскость
 spindle_top_z    = record_surface_z + spindle_above_record;
-// Ступенька 8 -> 7.1 прячется в ступице диска под матом
-spindle_tip_z    = platter_top_z - platter_mat_recess;
+// Уступ 8→7.1 — посадочная плоскость диска (низ ступицы)
+spindle_tip_z    = platter_bottom_z;
 
 // ---- отсек модуля вращения ----
 drive_bay = [[-inner_w/2 + drive_keep_side, -inner_d/2 + drive_keep_front],
@@ -459,6 +462,8 @@ for (p = drive_mount_pos)
            && p[1] - drive_mount_boss_d/2 >= drive_bay[0][1] && p[1] + drive_mount_boss_d/2 <= drive_bay[1][1],
            "Бобышка модуля вращения вне отсека drive_bay");
 assert(spindle_tip_d < record_hole_d, "Кончик вала не пройдёт в отверстие пластинки");
+assert(spindle_tip_d + platter_bore_clr < spindle_d,
+       "Отверстие диска не сядет на уступ вала: уменьшите platter_bore_clr");
 assert(mat_t > platter_mat_recess, "Мат должен выступать над плоскостью диска");
 assert(drive_bay[1][0] < main_pcb_pos[0] - main_pcb[0]/2, "Отсек модуля вращения налезает на плату УМ");
 assert(main_pcb_pos[0] + main_pcb[0]/2 < spk_back_x - 2, "Плата УМ упирается в правый динамик");

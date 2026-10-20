@@ -3,7 +3,8 @@
 //
 //  Снизу выбран, оставлены обод и спицы: меньше пластика и меньше
 //  поводки при печати. Сверху утопление под печатный мат из TPU.
-//  Сидит на валу на ступице со стопорным винтом.
+//  На вал не винтится: отверстие под кончик 7.1, ступица садится на
+//  уступ 8→7.1 и снимается вверх. Посадку правит platter_bore_clr.
 //
 //  Печать: перевернуть — рабочей плоскостью на стол. Тогда она получается
 //  ровной и гладкой, а спицы и обод печатаются вверх без поддержек.
@@ -16,6 +17,7 @@ assert(platter_hub_h <= platter_h, "Ступица диска выше само�
 
 module platter() {
     dish_h = platter_h - platter_top_t;     // глубина выборки снизу
+    bore_d = spindle_tip_d + platter_bore_clr;
     translate([platter_pos[0], platter_pos[1], platter_bottom_z]) difference() {
         union() {
             // обод + рабочая плоскость
@@ -32,20 +34,13 @@ module platter() {
                     translate([0, -1.25, 0])
                         cube([platter_d/2 - platter_rim_t + eps, 2.5, dish_h]);
         }
-        // отверстие под вал
-        thru(spindle_d + 0.3, platter_h);
+        thru(bore_d, platter_h);
+        // заход на уступ вала
+        translate([0, 0, -eps])
+            cylinder(d1 = bore_d + 1.2, d2 = bore_d, h = 0.8);
         // утопление под мат
         translate([0, 0, platter_h - platter_mat_recess])
             cylinder(d = platter_mat_d, h = platter_mat_recess + eps);
-        // Стопорный винт в ступице и технологическое отверстие в ободе:
-        // без него винт не затянуть, когда диск уже надет на вал.
-        // Азимут 30 град — между спицами, чтобы путь был свободен.
-        translate([0, 0, platter_hub_h/2])
-        rotate([0, 0, 180/platter_spokes]) rotate([0, 90, 0]) {
-            cylinder(d = scr3_pilot, h = platter_hub_d);
-            translate([0, 0, platter_d/2 - platter_rim_t - eps])
-                cylinder(d = set_access_d, h = platter_rim_t + 2*eps);
-        }
     }
 }
 
