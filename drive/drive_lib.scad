@@ -52,7 +52,7 @@ module shaft_flat(z, az = 0)
 // collar — буртик-упор снизу (вал диска). Промвал без буртика: торец
 // садится на пятку стакана, bottom_z = idler_shaft_z0.
 module printed_shaft_body(top_z, tip_len = 0, bottom_z = undef, collar = true) {
-    z0 = bottom_z == undef ? rod_bottom_z : bottom_z;
+    z0 = is_undef(bottom_z) ? rod_bottom_z : bottom_z;
     body_h = top_z - z0 - tip_len;
     translate([0, 0, z0]) {
         if (collar)
