@@ -71,21 +71,25 @@ module panel_cutouts() {
 
 // --------------------------------------------------------- динамики -------
 // Модули ниже строят узел у правой стенки, левый получается зеркалом.
-// Две направляющие уголком: паз между стенкой и «губой» держит фланец за
-// края, динамик опускается сверху до дна. Вверху паз расширен под заход.
+// Две направляющие уголком: тот же паз, что держал фланец на трении,
+// но сдвинут от стенки на spk_face_gap — подвес диффузора не прижат.
+// Передний упор паза только у краёв фланца; напротив диффузора — воздух.
+// Динамик опускается сверху до дна. Вверху паз расширен под заход.
 module speaker_rail() {
     lip_y0 = spk_rail_y - spk_rail_lip - spk_clr;
     difference() {
         translate([0, 0, floor_t - eps]) linear_extrude(height = spk_size + eps) {
-            translate([spk_wall_x - spk_rail_depth, spk_rail_y])
-                square([spk_rail_depth + eps, spk_rail_t]);
-            translate([spk_wall_x - spk_rail_depth, lip_y0])
+            translate([spk_face_x - spk_rail_depth, spk_rail_y])
+                square([spk_rail_depth + spk_face_gap + eps, spk_rail_t]);
+            translate([spk_face_x - spk_rail_depth, lip_y0])
                 square([spk_rail_t, spk_rail_y - lip_y0 + eps]);
+            translate([spk_face_x, lip_y0])
+                square([spk_face_gap + eps, spk_rail_y - lip_y0 + eps]);
         }
         hull() {
-            translate([spk_wall_x - spk_chan, lip_y0 - 1, floor_t + spk_size - 2])
+            translate([spk_face_x - spk_chan, lip_y0 - 1, floor_t + spk_size - 2])
                 cube([spk_chan, spk_rail_y - lip_y0 + 1, eps]);
-            translate([spk_wall_x - spk_chan - 1.2, lip_y0 - 1, floor_t + spk_size])
+            translate([spk_face_x - spk_chan - 1.2, lip_y0 - 1, floor_t + spk_size])
                 cube([spk_chan + 1.2, spk_rail_y - lip_y0 + 1, eps]);
         }
     }

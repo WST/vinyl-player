@@ -50,10 +50,10 @@ module mock_panel_pcb() color("darkgreen")
     translate([0, -case_d/2 + panel_t + panel_pcb_h + main_pcb_t/2, panel_z])
         cube([panel_pcb[0], main_pcb_t, panel_pcb[1]], center = true);
 
-// Динамик: фланец к стенке, корзина и магнит внутрь корпуса.
-// Отодвинут от стенки и дна на 0.05: касание гранью рушит рендер сборки.
+// Динамик: фланец в пазу, зазор до стенки под подвес, корзина внутрь.
+// Отодвинут от паза и дна на 0.05: касание гранью рушит рендер сборки.
 module mock_speakers() for (sx = [0, 1]) mirror([sx, 0, 0])
-    translate([spk_wall_x - 0.05, spk_y, spk_zc + 0.05]) rotate([0, -90, 0]) {
+    translate([spk_face_x - 0.05, spk_y, spk_zc + 0.05]) rotate([0, -90, 0]) {
         color("dimgray") difference() {
             translate([0, 0, spk_flange_t/2]) cube([spk_size, spk_size, spk_flange_t], center = true);
             for (a = [45 : 90 : 359]) rotate([0, 0, a])
