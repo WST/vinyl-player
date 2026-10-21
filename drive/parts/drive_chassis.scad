@@ -9,9 +9,9 @@
 //  сверху, оба упираются наружным кольцом в перемычку. Осевую нагрузку
 //  (диск, пластинка) держит верхний подшипник.
 //
-//  Промвал садится в стакан сверху: дно закрыто (пятка), два рабочих
-//  пояска и карман для смазки. Посадку правит idler_bush_clr — перепечатать
-//  шасси. Печать плитой на стол, без поддержек.
+//  Промвал садится в стакан сверху: дно закрыто (пятка), канал — гладкий
+//  цилиндр с заходной фаской у кромки. Посадку правит idler_bush_clr —
+//  перепечатать шасси. Печать плитой на стол, без поддержек.
 // ============================================================================
 
 include <../drive_params.scad>
@@ -25,8 +25,7 @@ module tower_solid(pos, top) translate([pos[0], pos[1], chassis_z0]) {
 }
 
 // Стакан промвала растёт из плиты. Канал не сквозной: торец вала
-// опирается на пятку. Два пояска держат вал, расточка между ними —
-// карман для литола.
+// опирается на пятку, стенка — ровный цилиндр без внутренней расточки.
 module idler_well_solid() translate([idler_pos[0], idler_pos[1], chassis_z0]) {
     cylinder(d = idler_bush_od, h = idler_bush_top - chassis_z0);
     for (a = [45 : 90 : 359]) rotate([0, 0, a])
@@ -38,9 +37,6 @@ module idler_well_bore() translate([idler_pos[0], idler_pos[1], 0]) {
     z0 = chassis_z0 + idler_thrust_t;
     h  = idler_bush_top - z0;
     translate([0, 0, z0]) cylinder(d = idler_bush_id, h = h + eps);
-    translate([0, 0, z0 + idler_bush_land])
-        cylinder(d = idler_bush_id + idler_bush_relief,
-                 h = h - 2*idler_bush_land);
     translate([0, 0, idler_bush_top - idler_mouth_ch])
         cylinder(d1 = idler_bush_id, d2 = idler_bush_id + 2*idler_mouth_ch,
                  h = idler_mouth_ch + eps);
