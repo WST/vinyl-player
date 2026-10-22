@@ -159,6 +159,9 @@ module tray() {
         panel_cutouts();
         io_panel_cutouts();
         speaker_grilles();
+        // днище наружу идеально плоское: срезать всё, что вылезло ниже z=0
+        translate([-case_w, -case_d, -case_h])
+            cube([2*case_w, 2*case_d, case_h]);
     }
 }
 
