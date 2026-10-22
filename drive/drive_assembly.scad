@@ -12,6 +12,7 @@ use <../lib/common.scad>
 use <drive.scad>
 use <../parts/tray.scad>
 use <../parts/platter.scad>
+use <../parts/platter_washer.scad>
 
 // ------------------------------------------------------------ что показывать
 show_mocks   = true;    // двигатель, подшипники, пассики
@@ -39,6 +40,9 @@ module bay_volume() {
 }
 
 cut() drive_module(mocks = show_mocks);
-if (show_platter) cut() color("darkslategray") platter();
+if (show_platter) cut() {
+    color("silver") platter_washer();
+    translate([0, 0, platter_washer_h]) color("darkslategray") platter();
+}
 if (show_tray) %tray();
 if (show_bay)  %bay_volume();

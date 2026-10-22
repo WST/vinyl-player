@@ -13,6 +13,7 @@ use <lib/common.scad>
 use <parts/tray.scad>
 use <parts/top_cover.scad>
 use <parts/platter.scad>
+use <parts/platter_washer.scad>
 use <parts/mat.scad>
 use <drive/drive.scad>          // модуль вращения — «плагин», см. drive/
 use <parts/control_panel.scad>
@@ -90,8 +91,11 @@ if (show_panel) color("steelblue") control_panel();
 if (show_drive) {
     drive_module(mocks = show_mockups);
     if (show_platter) {
-        color("darkslategray") platter();
-        color("dimgray") mat();
+        color("silver") platter_washer();
+        translate([0, 0, platter_washer_h]) {
+            color("darkslategray") platter();
+            color("dimgray") mat();
+        }
     }
 }
 
@@ -109,6 +113,6 @@ if (show_mockups) {
     mock_main_pcb();
     mock_panel_pcb();
     mock_speakers();
-    if (show_platter) mock_record();
+    if (show_platter) translate([0, 0, platter_washer_h]) mock_record();
     mock_cartridge(arm_az);
 }

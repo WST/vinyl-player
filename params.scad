@@ -123,6 +123,9 @@ spindle_above_record = 7;   // сколько вал выступает над �
 // как на ЭПУ. Зазор отверстия ступицы по кончику — если проскальзывает
 // на оборотах, уменьшить и перепечатать диск.
 platter_bore_clr = 0.25;
+// Шайба на уступе: диск внатуру садился на крышку. Толщину подобрать
+// перепечаткой только шайбы; отверстие то же, что у диска.
+platter_washer_h = 3;
 
 platter_rpm = 33.333;
 
@@ -467,6 +470,8 @@ for (p = drive_mount_pos)
 assert(spindle_tip_d < record_hole_d, "Кончик вала не пройдёт в отверстие пластинки");
 assert(spindle_tip_d + platter_bore_clr < spindle_d,
        "Отверстие диска не сядет на уступ вала: уменьшите platter_bore_clr");
+assert(platter_washer_h > 0, "Шайба диска нулевой толщины");
+assert(platter_hub_d > spindle_d + 2, "Шайба диска не сядет на уступ вала");
 assert(mat_t > platter_mat_recess, "Мат должен выступать над плоскостью диска");
 assert(drive_bay[1][0] < main_pcb_pos[0] - main_pcb[0]/2, "Отсек модуля вращения налезает на плату УМ");
 assert(main_pcb_pos[0] + main_pcb[0]/2 < spk_back_x, "Плата УМ упирается в правый динамик");
