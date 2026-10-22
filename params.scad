@@ -235,7 +235,7 @@ arm_cw_bore_clr = 0.3;
 // на саму трубку, а не на съёмную деталь и её винт.
 arm_rest_dist    = 82;      // подставка тонарма: расстояние от оси стойки
 arm_park_azimuth = -85;     // направление трубки в припаркованном положении
-arm_rest_lift    = 5;       // на сколько подставка приподнимает трубку
+arm_rest_lift    = 0;       // ложе на уровне оси качания: трубка лежит горизонтально
 arm_rest_od      = 10;      // ствол стойки
 // Ложе — U-образный паз вдоль трубки со стенками до её верха: трубка
 // просто ложится сверху, ничего не вдавливается (нагрузка на оси качания),
@@ -372,8 +372,9 @@ assert(arm_shell_pad_x > arm_wire_chan_fwd*cos(arm_headshell_angle)
 
 arm_rest_pos   = [arm_pivot_pos[0] + arm_rest_dist*cos(arm_park_azimuth),
                   arm_pivot_pos[1] + arm_rest_dist*sin(arm_park_azimuth)];
-// Ложе подставки (высоты абсолютные). Ось уложенной трубки — ровно на
-// arm_rest_lift выше рабочего уровня; верх стенок — по верху трубки.
+// Ложе подставки (высоты абсолютные). Ось уложенной трубки — на уровне
+// оси качания (плюс arm_rest_lift, если понадобится чуть приподнять);
+// верх стенок — по верху трубки.
 arm_rest_tube_z   = arm_axis_z + arm_rest_lift;
 arm_rest_chan_w   = arm_tube_od + 2*arm_rest_clr;
 arm_rest_top_z    = arm_rest_tube_z + arm_tube_od/2;
