@@ -79,7 +79,7 @@ module io_panel_frame_pad() {
 module io_panel_screw_bosses() {
     for (p = io_panel_scr_pos)
         translate([case_w/2 - wall - panel_pad_t, p[0], p[1]])
-            rotate([0, 90, 0])
+            rotate([0, -90, 0])
                 cylinder(d = scr25_boss_d, h = panel_boss_len);
 }
 
@@ -91,7 +91,7 @@ module io_panel_cutouts() {
               io_panel_plate[1] + 2*panel_clr], center = true);
     for (p = io_panel_scr_pos)
         translate([case_w/2 + eps, p[0], p[1]])
-            rotate([0, 90, 0])
+            rotate([0, -90, 0])
                 cylinder(d = scr25_pilot,
                          h = wall + panel_pad_t + panel_boss_len + eps);
 }

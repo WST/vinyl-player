@@ -11,6 +11,7 @@ include <params.scad>
 use <lib/common.scad>
 
 use <parts/tray.scad>
+use <parts/feet.scad>
 use <parts/top_cover.scad>
 use <parts/platter.scad>
 use <parts/platter_washer.scad>
@@ -90,7 +91,10 @@ module mock_cartridge(az) color("darkred")
                 cube([cart_body[1], cart_body[0], cart_body[2]], center = true);
 
 // ============================================================== СБОРКА =====
-if (show_tray)  color("gainsboro") tray();
+if (show_tray) {
+    color("gainsboro") tray();
+    color("dimgray") feet();
+}
 if (show_cover) color("lightsteelblue") top_cover();
 if (show_panel) color("steelblue") control_panel();
 if (show_panel) color("steelblue") io_panel();

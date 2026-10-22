@@ -31,6 +31,12 @@ floor_t  = 2;           // толщина дна поддона
 corner_r = 6;           // скругление ВЕРТИКАЛЬНЫХ (боковых) рёбер;
                         // нижние и верхние рёбра оставляем острыми
 
+// Ножки — отдельные, из TPU, клеятся к днищу. Поддон не меняется.
+foot_d     = 20;
+foot_h     = 8;
+foot_ch    = 1.5;        // фаска со стороны стола
+foot_inset = 18;         // центр ножки от края корпуса
+
 cover_plate_t = 3;      // толщина верхней панели
 cover_lip_h   = 5;      // высота бортика, входящего внутрь поддона
 cover_lip_t   = 1.6;    // толщина этого бортика
@@ -95,7 +101,8 @@ panel_pcb_hole = [[-54, -6], [54, -6], [-54, 6], [54, 6]];
 // ============================================================================
 io_panel_w = 80;        // окно в стенке по Y
 io_panel_h = 28;        // окно в стенке по Z
-io_panel_z = 21;        // центр окна: заплечик не ниже z=0
+io_panel_z = 20;        // центр окна: заплечик от днища до рамки под бортик
+io_panel_flange = 6;    // чуть уже переднего: иначе четверть прорежет стенку над рамкой
 io_spk_gap = 16;        // от направляющей динамика до окна
 
 io_dc_d = 8.2;          // гнездо питания 5.5/2.1
@@ -455,6 +462,9 @@ case_screw_pos = concat(
       [sx*(panel_w/2 + 14), sy*(case_d/2 - corner_r)] ]
 );
 
+foot_pos = [ for (sx = [-1, 1], sy = [-1, 1])
+             [sx*(case_w/2 - foot_inset), sy*(case_d/2 - foot_inset)] ];
+
 // ---- динамики (для правой стенки; левая — зеркально) ----
 spk_wall_x  = case_w/2 - wall;                  // внутренняя плоскость стенки
 spk_face_x  = spk_wall_x - spk_face_gap;        // плоскость фланца
@@ -471,7 +481,7 @@ grille_n    = floor((grille_r - grille_slot_w/2)/grille_pitch);
 io_panel_y      = spk_y + spk_half_w + io_spk_gap + io_panel_w/2;
 io_win_top      = io_panel_z + io_panel_h/2;
 io_win_bot      = io_panel_z - io_panel_h/2;
-io_panel_plate  = [io_panel_w + 2*panel_flange, io_panel_h + 2*panel_flange];
+io_panel_plate  = [io_panel_w + 2*io_panel_flange, io_panel_h + 2*io_panel_flange];
 io_panel_pad_y0 = max(spk_y + spk_half_w + 1, io_panel_y - io_panel_w/2 - panel_pad_w);
 io_panel_pad_y1 = min(inner_d/2 - 1, io_panel_y + io_panel_w/2 + panel_pad_w);
 io_panel_pad_z0 = max(floor_t, io_win_bot - panel_pad_w);
@@ -512,6 +522,8 @@ function arm_tracking_error(r) =
 //  ПРОВЕРКИ КОМПОНОВКИ
 // ============================================================================
 assert(corner_r > wall, "Скругление боковых рёбер должно быть больше толщины стенки");
+assert(foot_inset - foot_d/2 >= 1, "Ножка свешивается с днища: увеличьте foot_inset");
+assert(foot_h > foot_ch, "Фаска ножки выше самой ножки");
 assert(platter_d/2 + 5 < min(case_w, case_d)/2 - wall, "Диск не влезает в корпус");
 for (p = drive_mount_pos)
     assert(p[0] - drive_mount_boss_d/2 >= drive_bay[0][0] && p[0] + drive_mount_boss_d/2 <= drive_bay[1][0]
@@ -554,7 +566,8 @@ assert(io_panel_pad_y0 > spk_y + spk_half_w,
        "Рамка панели разъёмов налезает на направляющую динамика");
 assert(io_panel_pad_y1 < case_d/2 - corner_r - scr3_boss_d/2,
        "Рамка панели разъёмов налезает на стойку крышки у задней стенки");
-assert(io_panel_pad_z1 > io_win_top, "Рамка панели разъёмов не выше окна");
+assert(io_panel_pad_z1 > io_panel_z + io_panel_plate[1]/2,
+       "Рамка панели разъёмов не закрывает четверть сверху: будет сквозная щель");
 // Противовес должен оставаться в габарите корпуса на всём ходе тонарма
 for (r = [arm_groove_r_in, arm_groove_r_out]) {
     assert(abs(arm_cw_pos_at(r)[0]) + arm_cw_d/2 < case_w/2 - wall,
