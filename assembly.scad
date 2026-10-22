@@ -24,6 +24,7 @@ use <parts/tonearm_arm.scad>
 use <parts/tonearm_headshell.scad>
 use <parts/tonearm_counterweight.scad>
 use <parts/tonearm_rest.scad>
+use <parts/label.scad>
 
 // ------------------------------------------------------------ что показывать
 show_tray    = true;
@@ -87,6 +88,7 @@ module mock_cartridge(az) color("darkred")
 if (show_tray)  color("gainsboro") tray();
 if (show_cover) color("lightsteelblue") top_cover();
 if (show_panel) color("steelblue") control_panel();
+if (show_cover) label();
 
 if (show_drive) {
     drive_module(mocks = show_mockups);

@@ -249,6 +249,18 @@ arm_rest_foot_t  = 4;
 arm_rest_scr_dx  = 9;       // два винта крепления подставки, смещение по X
 
 // ============================================================================
+//  ЛЕЙБЛ НА КРЫШКЕ
+//  Отдельная табличка, клеится сверху. Текст — parts/label.scad.
+//  Справа от диска, перед подставкой тонарма (ближе к передней кромке).
+// ============================================================================
+label_w        = 70;
+label_plate_h  = 0.5;
+label_text_h   = 1;
+label_border   = 2;
+label_edge_clr = 15;        // от правого края крышки
+label_rest_gap = 18;        // от ножки подставки вперёд, до центра таблички
+
+// ============================================================================
 //  ПЕЧАТНЫЕ ПЛАТЫ ВНУТРИ КОРПУСА
 // ============================================================================
 // Фонокорректор + УМ — вперёд до зоны платы управления, подальше от
@@ -398,6 +410,10 @@ arm_rest_scr_pos = [ for (s = [-1, 1])
                      [arm_rest_pos[0] + s*arm_rest_scr_dx*cos(arm_park_azimuth + 90),
                       arm_rest_pos[1] + s*arm_rest_scr_dx*sin(arm_park_azimuth + 90)] ];
 
+// Лейбл: справа от диска, перед подставкой, ближе к передней кромке
+label_pos = [case_w/2 - label_edge_clr - label_w/2,
+             arm_rest_pos[1] - arm_rest_foot_d/2 - label_rest_gap];
+
 // ---- панель управления ----
 panel_win_top  = panel_z + panel_h/2;
 panel_win_bot  = panel_z - panel_h/2;
@@ -489,6 +505,14 @@ assert(abs(spk_y) + spk_half_w < case_d/2 - corner_r - scr3_boss_d/2 - 1,
 assert(spindle_keepout_d > cover_spindle_hole_d + 4, "Зона без рёбер вокруг вала уже проёма в крышке");
 assert(arm_yoke_rise >= arm_yoke_bar_t + arm_hub_h/2 + 2, "Вилка тонарма упирается в ступицу");
 assert(arm_mount_dist > platter_d/2 + arm_base_flange_d/2, "Стойка тонарма попадает под диск");
+assert(label_pos[0] + label_w/2 <= case_w/2 - 1, "Лейбл вылезает за край крышки");
+assert(label_pos[1] > -case_d/2 + 8, "Лейбл вылезает за передний край крышки");
+assert(label_pos[1] < arm_rest_pos[1] - arm_rest_foot_d/2,
+       "Лейбл должен стоять перед подставкой тонарма");
+assert(norm(label_pos - arm_rest_pos) > arm_rest_foot_d/2 + 12,
+       "Лейбл налезает на подставку тонарма");
+assert(norm(label_pos - arm_pivot_pos) > arm_base_flange_d/2 + 8,
+       "Лейбл налезает на стойку тонарма");
 assert(panel_pad_z1 > panel_win_top + panel_flange, "Рамка панели не влезает по высоте");
 // Противовес должен оставаться в габарите корпуса на всём ходе тонарма
 for (r = [arm_groove_r_in, arm_groove_r_out]) {
