@@ -17,6 +17,7 @@ use <parts/platter_washer.scad>
 use <parts/mat.scad>
 use <drive/drive.scad>          // модуль вращения — «плагин», см. drive/
 use <parts/control_panel.scad>
+use <parts/io_panel.scad>
 use <parts/tonearm_base.scad>
 use <parts/tonearm_pin.scad>
 use <parts/tonearm_yoke.scad>
@@ -51,6 +52,10 @@ module mock_main_pcb() color("darkgreen")
 module mock_panel_pcb() color("darkgreen")
     translate([0, -case_d/2 + panel_t + panel_pcb_h + main_pcb_t/2, panel_z])
         cube([panel_pcb[0], main_pcb_t, panel_pcb[1]], center = true);
+
+module mock_io_panel_pcb() color("darkgreen")
+    translate([case_w/2 - panel_t - io_panel_pcb_h - main_pcb_t/2, io_panel_y, io_panel_z])
+        cube([main_pcb_t, io_panel_pcb[0], io_panel_pcb[1]], center = true);
 
 // Динамик: фланец в пазу, зазор до стенки под подвес, корзина внутрь.
 // Отодвинут от паза и дна на 0.05: касание гранью рушит рендер сборки.
@@ -88,6 +93,7 @@ module mock_cartridge(az) color("darkred")
 if (show_tray)  color("gainsboro") tray();
 if (show_cover) color("lightsteelblue") top_cover();
 if (show_panel) color("steelblue") control_panel();
+if (show_panel) color("steelblue") io_panel();
 if (show_cover) label();
 
 if (show_drive) {
@@ -114,6 +120,7 @@ if (show_tonearm) {
 if (show_mockups) {
     mock_main_pcb();
     mock_panel_pcb();
+    mock_io_panel_pcb();
     mock_speakers();
     if (show_platter) translate([0, 0, platter_washer_h]) mock_record();
     mock_cartridge(arm_az);

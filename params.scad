@@ -88,6 +88,26 @@ panel_pcb_h    = 8;         // высота стоек (зазор панель 
 panel_pcb_hole = [[-54, -6], [54, -6], [-54, 6], [54, 6]];
 
 // ============================================================================
+//  ПАНЕЛЬ РАЗЪЁМОВ (съёмная, в правой стенке поддона)
+//  Питание, линейный выход и т.п. Та же схема, что у передней: окно с
+//  четвертью, панель заподлицо. Отверстия правятся здесь, поддон нет.
+//  Окно 80×28; заплечик и винты делают деталь чуть больше.
+// ============================================================================
+io_panel_w = 80;        // окно в стенке по Y
+io_panel_h = 28;        // окно в стенке по Z
+io_panel_z = 21;        // центр окна: заплечик не ниже z=0
+io_spk_gap = 16;        // от направляющей динамика до окна
+
+io_dc_d = 8.2;          // гнездо питания 5.5/2.1
+io_dc_y = [-22];
+io_jack_d = 6.2;        // 3.5 мм линейный выход
+io_jack_y = [10];
+
+io_panel_pcb      = [64, 20];
+io_panel_pcb_h    = 8;
+io_panel_pcb_hole = [[-26, -6], [26, -6], [-26, 6], [26, 6]];
+
+// ============================================================================
 //  ДИСК И ВАЛ
 //  Всё, что под крышкой (подшипники, шкивы, двигатель), — это модуль
 //  вращения в drive/. Здесь только то, что видят остальные детали:
@@ -287,7 +307,7 @@ spk_cone_d    = 36;
 spk_depth     = 22;         // от фланца до торца магнита
 spk_flange_t  = 2;          // толщина фланца по краю — ИЗМЕРИТЬ
 spk_magnet_d  = 25;         // для болванки
-spk_y         = -30;        // центр динамиков по Y (−Y — вперёд)
+spk_y         = -50;        // центр динамиков по Y (−Y — вперёд)
 spk_clr       = 0.3;        // зазор фланца в пазу
 spk_rail_t    = 2;          // стенки направляющих
 spk_rail_lip  = 2;          // на сколько направляющая заходит за кромку фланца
@@ -447,6 +467,19 @@ spk_back_x  = spk_face_x - spk_depth;           // торец магнита
 grille_r    = spk_cone_d/2 - 1;                 // щели только перед диффузором
 grille_n    = floor((grille_r - grille_slot_w/2)/grille_pitch);
 
+// ---- панель разъёмов (правая стенка; окно позади динамика) ----
+io_panel_y      = spk_y + spk_half_w + io_spk_gap + io_panel_w/2;
+io_win_top      = io_panel_z + io_panel_h/2;
+io_win_bot      = io_panel_z - io_panel_h/2;
+io_panel_plate  = [io_panel_w + 2*panel_flange, io_panel_h + 2*panel_flange];
+io_panel_pad_y0 = max(spk_y + spk_half_w + 1, io_panel_y - io_panel_w/2 - panel_pad_w);
+io_panel_pad_y1 = min(inner_d/2 - 1, io_panel_y + io_panel_w/2 + panel_pad_w);
+io_panel_pad_z0 = max(floor_t, io_win_bot - panel_pad_w);
+io_panel_pad_z1 = min(tray_h - cover_lip_h - 1, io_win_top + panel_pad_w);
+io_panel_scr_pos = [ for (sy = [-1, 1], sz = [-1, 1])
+                     [io_panel_y + sy*(io_panel_w/2 + panel_scr_off),
+                      io_panel_z + sz*(io_panel_h/2 + panel_scr_off)] ];
+
 // ---- платы ----
 main_pcb_hole_pos = [ for (sx = [-1, 1], sy = [-1, 1])
                       [main_pcb_pos[0] + sx*(main_pcb[0]/2 - pcb_hole_inset),
@@ -514,6 +547,14 @@ assert(norm(label_pos - arm_rest_pos) > arm_rest_foot_d/2 + 12,
 assert(norm(label_pos - arm_pivot_pos) > arm_base_flange_d/2 + 8,
        "Лейбл налезает на стойку тонарма");
 assert(panel_pad_z1 > panel_win_top + panel_flange, "Рамка панели не влезает по высоте");
+assert(io_win_bot > floor_t, "Окно панели разъёмов ниже дна поддона");
+assert(io_win_top < tray_h - cover_lip_h, "Окно панели разъёмов выше бортика крышки");
+assert(io_panel_z - io_panel_plate[1]/2 >= -0.05, "Заплечик панели разъёмов ниже днища");
+assert(io_panel_pad_y0 > spk_y + spk_half_w,
+       "Рамка панели разъёмов налезает на направляющую динамика");
+assert(io_panel_pad_y1 < case_d/2 - corner_r - scr3_boss_d/2,
+       "Рамка панели разъёмов налезает на стойку крышки у задней стенки");
+assert(io_panel_pad_z1 > io_win_top, "Рамка панели разъёмов не выше окна");
 // Противовес должен оставаться в габарите корпуса на всём ходе тонарма
 for (r = [arm_groove_r_in, arm_groove_r_out]) {
     assert(abs(arm_cw_pos_at(r)[0]) + arm_cw_d/2 < case_w/2 - wall,

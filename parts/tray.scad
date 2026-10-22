@@ -3,8 +3,8 @@
 //
 //  Несёт: бобышки под модуль вращения (сам модуль — в drive/), стойки
 //  платы фонокорректора/УМ под тонармом, направляющие динамиков со щелями
-//  решётки в боковых стенках, рамку съёмной панели управления и стойки под
-//  саморезы крышки.
+//  решётки в боковых стенках, рамки съёмных панелей (передняя — управление,
+//  правая — разъёмы) и стойки под саморезы крышки.
 //
 //  Печать: как есть, дном на стол, без поддержек.
 // ============================================================================
@@ -69,6 +69,33 @@ module panel_cutouts() {
                          h = wall + panel_pad_t + panel_boss_len + eps);
 }
 
+// ------------------------------------------- рамка панели разъёмов (справа) --
+module io_panel_frame_pad() {
+    translate([case_w/2 - wall - panel_pad_t, io_panel_pad_y0, io_panel_pad_z0])
+        cube([panel_pad_t + 0.5, io_panel_pad_y1 - io_panel_pad_y0,
+              io_panel_pad_z1 - io_panel_pad_z0]);
+}
+
+module io_panel_screw_bosses() {
+    for (p = io_panel_scr_pos)
+        translate([case_w/2 - wall - panel_pad_t, p[0], p[1]])
+            rotate([0, 90, 0])
+                cylinder(d = scr25_boss_d, h = panel_boss_len);
+}
+
+module io_panel_cutouts() {
+    translate([case_w/2 - wall - panel_pad_t - 1, io_panel_y - io_panel_w/2, io_win_bot])
+        cube([wall + panel_pad_t + 2, io_panel_w, io_panel_h]);
+    translate([case_w/2 + eps, io_panel_y, io_panel_z])
+        cube([2*(panel_t + eps), io_panel_plate[0] + 2*panel_clr,
+              io_panel_plate[1] + 2*panel_clr], center = true);
+    for (p = io_panel_scr_pos)
+        translate([case_w/2 + eps, p[0], p[1]])
+            rotate([0, 90, 0])
+                cylinder(d = scr25_pilot,
+                         h = wall + panel_pad_t + panel_boss_len + eps);
+}
+
 // --------------------------------------------------------- динамики -------
 // Модули ниже строят узел у правой стенки, левый получается зеркалом.
 // Две направляющие уголком: тот же паз, что держал фланец на трении,
@@ -124,10 +151,13 @@ module tray() {
             drive_mount_bosses();
             panel_frame_pad();
             panel_screw_bosses();
+            io_panel_frame_pad();
+            io_panel_screw_bosses();
             pcb_standoffs();
             speaker_mounts();
         }
         panel_cutouts();
+        io_panel_cutouts();
         speaker_grilles();
     }
 }
